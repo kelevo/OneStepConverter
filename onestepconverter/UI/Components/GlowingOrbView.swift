@@ -2,110 +2,102 @@
 //  GlowingOrbView.swift
 //  OneStepConverter
 //
-//  Orbe circular púrpura translúcido con resplandor exterior.
-//  Usado en: Dropzone (upload), Convirtiendo (video row), Completado (checkmark).
+//  Orbe circular glass con ícono de Figma y soporte para micro-interacciones.
 //
 
 import SwiftUI
 
 struct GlowingOrbView: View {
-    let systemName: String
     var diameter: CGFloat = AppTheme.Dimensions.orbDiameter
-    var iconSize: CGFloat = AppTheme.Dimensions.orbIconSize
-    var showGlow: Bool = true
     var isHighlighted: Bool = false
 
     var body: some View {
         ZStack {
-            // Capa 1: Resplandor exterior difuso
-            if showGlow {
-                Circle()
-                    .fill(AppTheme.Colors.neonPurple.opacity(isHighlighted ? 0.40 : 0.15))
-                    .frame(
-                        width: diameter * (isHighlighted ? 1.5 : 1.4),
-                        height: diameter * (isHighlighted ? 1.5 : 1.4)
-                    )
-                    .blur(radius: isHighlighted ? 32 : AppTheme.Dimensions.orbGlowRadius)
-            }
-
-            // Capa 2: Relleno glass con degradado radial
+            // Capa 1: Relleno glass translúcido con gradiente a -45°
             Circle()
-                .fill(AppTheme.Gradients.orbFill)
+                .fill(AppTheme.Gradients.glassOrbGradient)
                 .frame(width: diameter, height: diameter)
 
-            // Capa 3: Borde brillante sutil
+            // Capa 2: Reflejo superior para realzar el efecto glass
             Circle()
-                .stroke(
-                    isHighlighted ? AppTheme.Colors.neonPurpleLight.opacity(0.8) : AppTheme.Colors.orbBorder,
-                    lineWidth: isHighlighted ? 1.5 : AppTheme.Dimensions.orbBorderWidth
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            Color.white.opacity(0.18),
+                            Color.clear
+                        ],
+                        center: .topLeading,
+                        startRadius: 10,
+                        endRadius: diameter * 0.75
+                    )
                 )
                 .frame(width: diameter, height: diameter)
 
-            // Capa 4: Ícono SF Symbol
-            Image(systemName: systemName)
-                .font(.system(size: iconSize, weight: .medium))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
+            // Capa 3: Borde glass reflectivo a -45°
+            Circle()
+                .stroke(
+                    AppTheme.Gradients.glassStroke,
+                    lineWidth: 1.2
+                )
+                .frame(width: diameter, height: diameter)
+
+            // Capa 4: Ícono oficial de Figma (IconoFlechaFigma)
+            Image("UploadArrow")
+                .renderingMode(.template)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 110, height: 110)
+                .foregroundStyle(Color.white)
+                .offset(y: -2)
         }
+        .frame(width: diameter, height: diameter)
         .scaleEffect(isHighlighted ? 1.05 : 1.0)
-        .shadow(
-            color: isHighlighted ? AppTheme.Colors.neonPurple.opacity(0.75) : AppTheme.Effects.glowShadow,
-            radius: isHighlighted ? 32 : AppTheme.Effects.glowShadowRadius
-        )
         .animation(.easeInOut(duration: 0.25), value: isHighlighted)
     }
 }
 
-// MARK: - Variantes Pre-configuradas
-extension GlowingOrbView {
-    /// Orbe grande para la Dropzone (Vista 1) con ícono de subida
-    static func uploadOrb(isHighlighted: Bool = false) -> GlowingOrbView {
-        GlowingOrbView(systemName: "arrow.up.to.line", isHighlighted: isHighlighted)
-    }
+// MARK: - Componente del Destello Neón Independiente
+struct OrbNeonGlowView: View {
+    var diameter: CGFloat = AppTheme.Dimensions.orbDiameter
+    var isHighlighted: Bool = false
 
-    /// Orbe grande para la Vista Completada (Vista 3) con checkmark
-    static var completedOrb: GlowingOrbView {
-        GlowingOrbView(systemName: "checkmark")
-    }
+    var body: some View {
+        ZStack {
+            // Brillo púrpura profundo difuso que se expande hacia abajo
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            AppTheme.Colors.neonPurple.opacity(isHighlighted ? 0.70 : 0.45),
+                            AppTheme.Colors.accentPurple.opacity(isHighlighted ? 0.40 : 0.20),
+                            Color.clear
+                        ],
+                        center: .center,
+                        startRadius: 40,
+                        endRadius: diameter * 0.85
+                    )
+                )
+                .frame(width: diameter * 1.55, height: diameter * 1.55)
+                .blur(radius: isHighlighted ? 36 : 28)
 
-    /// Orbe pequeño para la fila de video en la Vista Convirtiendo
-    static var videoRowOrb: GlowingOrbView {
-        GlowingOrbView(
-            systemName: "video.fill",
-            diameter: AppTheme.Dimensions.rowIconDiameter,
-            iconSize: 18,
-            showGlow: false
-        )
+            // Núcleo brillante
+            Circle()
+                .fill(AppTheme.Colors.neonPurpleLight.opacity(isHighlighted ? 0.35 : 0.15))
+                .frame(width: diameter * 1.1, height: diameter * 1.1)
+                .blur(radius: 20)
+        }
+        .scaleEffect(isHighlighted ? 1.06 : 1.0)
+        .animation(.easeInOut(duration: 0.25), value: isHighlighted)
+        .allowsHitTesting(false)
     }
 }
 
-#Preview("Upload Orb") {
+#Preview {
     ZStack {
-        AppTheme.Gradients.mainBackground
-        GlowingOrbView.uploadOrb()
+        AppTheme.Colors.spaceBlack
+            .ignoresSafeArea()
+        OrbNeonGlowView(isHighlighted: false)
+        GlowingOrbView(isHighlighted: false)
     }
     .frame(width: 400, height: 400)
-}
-
-#Preview("Upload Orb Highlighted") {
-    ZStack {
-        AppTheme.Gradients.mainBackground
-        GlowingOrbView.uploadOrb(isHighlighted: true)
-    }
-    .frame(width: 400, height: 400)
-}
-
-#Preview("Completed Orb") {
-    ZStack {
-        AppTheme.Gradients.mainBackground
-        GlowingOrbView.completedOrb
-    }
-    .frame(width: 400, height: 400)
-}
-
-#Preview("Video Row Orb") {
-    ZStack {
-        AppTheme.Gradients.mainBackground
-        GlowingOrbView.videoRowOrb
-    }
-    .frame(width: 100, height: 100)
 }

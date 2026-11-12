@@ -20,34 +20,36 @@ struct MainContainerView: View {
     @State private var isDragTargeted: Bool = false
 
     var body: some View {
-        ZStack {
-            // Fondo espacial de degradado profundo
-            AppTheme.Gradients.mainBackground
+        ZStack(alignment: .top) {
+            // Fondo espacial base absoluto (#000320)
+            AppTheme.Colors.spaceBlack
                 .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                // Header superior integrado compartido
-                headerBar
-
-                // Contenido dinámico según el estado actual
-                Group {
-                    switch currentState {
-                    case .dropzone:
-                        DropzoneView(
-                            isTargeted: $isDragTargeted,
-                            onSelectFolderTapped: handleSelectFolder
-                        )
-                    case .confirmConverting:
-                        Text("Confirmar Lote — Próxima fase")
-                            .foregroundStyle(AppTheme.Colors.textSecondary)
-                    case .converting:
-                        ConvertingView()
-                    case .completed:
-                        CompletedView()
-                    }
+            // Contenido dinámico según el estado actual
+            Group {
+                switch currentState {
+                case .dropzone:
+                    DropzoneView(
+                        isTargeted: $isDragTargeted,
+                        onSelectFolderTapped: handleSelectFolder
+                    )
+                case .confirmConverting:
+                    Text("Confirmar Lote — Próxima fase")
+                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                case .converting:
+                    ConvertingView()
+                case .completed:
+                    CompletedView()
                 }
-                .transition(.opacity)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            // Título superior a la misma altura exacta de los semáforos de macOS
+            Text("OneStepConverter")
+                .font(AppTheme.Typography.windowTitleFont)
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .padding(.top, 14)
+                .allowsHitTesting(false)
         }
         .frame(
             width: AppTheme.Dimensions.windowWidth,
@@ -55,20 +57,9 @@ struct MainContainerView: View {
         )
     }
 
-    // MARK: - Subviews
-    private var headerBar: some View {
-        Text("OneStepConverter")
-            .font(.system(size: 13, weight: .regular))
-            .foregroundStyle(AppTheme.Colors.textSecondary)
-            .frame(maxWidth: .infinity)
-            .padding(.top, 10)
-            .padding(.bottom, 6)
-    }
-
     // MARK: - Actions
     private func handleSelectFolder() {
         print("📁 [OneStepConverter] Acción disparada: Seleccionar carpeta")
-        // TODO: En Fase 3 se integrará NSOpenPanel y lectura de archivos
     }
 }
 
