@@ -3,6 +3,7 @@
 //  OneStepConverter
 //
 //  Vista raíz que orquesta los estados de navegación de la app.
+//  Header dedicado de 28pt con fondo #000320 continuo sin recortes.
 //
 
 import SwiftUI
@@ -20,10 +21,17 @@ struct MainContainerView: View {
     @State private var isDragTargeted: Bool = false
 
     var body: some View {
-        ZStack(alignment: .top) {
-            // Fondo espacial base absoluto (#000320)
-            AppTheme.Colors.spaceBlack
-                .ignoresSafeArea()
+        VStack(spacing: 0) {
+            // Header con título centrado y fondo #000320 (Figma: 737 x 27pt)
+            ZStack {
+                AppTheme.Colors.spaceBlack
+                    .frame(height: 28)
+
+                Text("OneStepConverter")
+                    .font(AppTheme.Typography.windowTitleFont)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+            .frame(height: 28)
 
             // Contenido dinámico según el estado actual
             Group {
@@ -43,14 +51,8 @@ struct MainContainerView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            // Título superior a la misma altura exacta de los semáforos de macOS
-            Text("OneStepConverter")
-                .font(AppTheme.Typography.windowTitleFont)
-                .foregroundStyle(AppTheme.Colors.textSecondary)
-                .padding(.top, 14)
-                .allowsHitTesting(false)
         }
+        .background(AppTheme.Colors.spaceBlack)
         .frame(
             width: AppTheme.Dimensions.windowWidth,
             height: AppTheme.Dimensions.windowHeight
