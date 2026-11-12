@@ -2,13 +2,23 @@
 //  MainContainerView.swift
 //  OneStepConverter
 //
-//  Vista raíz que orquesta los estados de la app.
-//  Fase 1: Muestra el fondo espacial con el orbe de subida como verificación visual.
+//  Vista raíz que orquesta los estados de navegación de la app.
 //
 
 import SwiftUI
 
+/// Estados principales del ciclo de conversión.
+enum AppState {
+    case dropzone
+    case confirmConverting
+    case converting
+    case completed
+}
+
 struct MainContainerView: View {
+    @State private var currentState: AppState = .dropzone
+    @State private var isDragTargeted: Bool = false
+
     var body: some View {
         ZStack {
             // Fondo espacial de degradado profundo
@@ -16,40 +26,27 @@ struct MainContainerView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Título integrado en lugar de barra de título nativa
-                Text("OneStepConverter")
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 8)
-                    .padding(.bottom, 16)
+                // Header superior integrado compartido
+                headerBar
 
-                Spacer()
-
-                // Título de pantalla
-                Text("ARRASTRA TUS VÍDEOS AQUÍ")
-                    .screenTitleStyle()
-                    .padding(.bottom, 32)
-
-                // Orbe central con ícono de subida
-                GlowingOrbView.uploadOrb
-
-                Spacer()
-
-                // Botón cápsula placeholder
-                Text("SELECCIONAR CARPETA")
-                    .font(AppTheme.Typography.buttonFont)
-                    .tracking(1.5)
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
-                    .padding(.horizontal, 28)
-                    .padding(.vertical, 12)
-                    .background(AppTheme.Colors.glassSurfaceTranslucent)
-                    .clipShape(RoundedRectangle(cornerRadius: AppTheme.Dimensions.capsuleCornerRadius))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: AppTheme.Dimensions.capsuleCornerRadius)
-                            .stroke(AppTheme.Colors.glowBorder, lineWidth: 1)
-                    )
-                    .padding(.bottom, 40)
+                // Contenido dinámico según el estado actual
+                Group {
+                    switch currentState {
+                    case .dropzone:
+                        DropzoneView(
+                            isTargeted: $isDragTargeted,
+                            onSelectFolderTapped: handleSelectFolder
+                        )
+                    case .confirmConverting:
+                        Text("Confirmar Lote — Próxima fase")
+                            .foregroundStyle(AppTheme.Colors.textSecondary)
+                    case .converting:
+                        ConvertingView()
+                    case .completed:
+                        CompletedView()
+                    }
+                }
+                .transition(.opacity)
             }
         }
         .frame(
@@ -57,9 +54,24 @@ struct MainContainerView: View {
             height: AppTheme.Dimensions.windowHeight
         )
     }
+
+    // MARK: - Subviews
+    private var headerBar: some View {
+        Text("OneStepConverter")
+            .font(.system(size: 13, weight: .regular))
+            .foregroundStyle(AppTheme.Colors.textSecondary)
+            .frame(maxWidth: .infinity)
+            .padding(.top, 10)
+            .padding(.bottom, 6)
+    }
+
+    // MARK: - Actions
+    private func handleSelectFolder() {
+        print("📁 [OneStepConverter] Acción disparada: Seleccionar carpeta")
+        // TODO: En Fase 3 se integrará NSOpenPanel y lectura de archivos
+    }
 }
 
 #Preview {
     MainContainerView()
 }
-

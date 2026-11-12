@@ -13,15 +13,19 @@ struct GlowingOrbView: View {
     var diameter: CGFloat = AppTheme.Dimensions.orbDiameter
     var iconSize: CGFloat = AppTheme.Dimensions.orbIconSize
     var showGlow: Bool = true
+    var isHighlighted: Bool = false
 
     var body: some View {
         ZStack {
             // Capa 1: Resplandor exterior difuso
             if showGlow {
                 Circle()
-                    .fill(AppTheme.Colors.neonPurple.opacity(0.15))
-                    .frame(width: diameter * 1.4, height: diameter * 1.4)
-                    .blur(radius: AppTheme.Dimensions.orbGlowRadius)
+                    .fill(AppTheme.Colors.neonPurple.opacity(isHighlighted ? 0.40 : 0.15))
+                    .frame(
+                        width: diameter * (isHighlighted ? 1.5 : 1.4),
+                        height: diameter * (isHighlighted ? 1.5 : 1.4)
+                    )
+                    .blur(radius: isHighlighted ? 32 : AppTheme.Dimensions.orbGlowRadius)
             }
 
             // Capa 2: Relleno glass con degradado radial
@@ -31,7 +35,10 @@ struct GlowingOrbView: View {
 
             // Capa 3: Borde brillante sutil
             Circle()
-                .stroke(AppTheme.Colors.orbBorder, lineWidth: AppTheme.Dimensions.orbBorderWidth)
+                .stroke(
+                    isHighlighted ? AppTheme.Colors.neonPurpleLight.opacity(0.8) : AppTheme.Colors.orbBorder,
+                    lineWidth: isHighlighted ? 1.5 : AppTheme.Dimensions.orbBorderWidth
+                )
                 .frame(width: diameter, height: diameter)
 
             // Capa 4: Ícono SF Symbol
@@ -39,18 +46,20 @@ struct GlowingOrbView: View {
                 .font(.system(size: iconSize, weight: .medium))
                 .foregroundStyle(AppTheme.Colors.textPrimary)
         }
+        .scaleEffect(isHighlighted ? 1.05 : 1.0)
         .shadow(
-            color: AppTheme.Effects.glowShadow,
-            radius: AppTheme.Effects.glowShadowRadius
+            color: isHighlighted ? AppTheme.Colors.neonPurple.opacity(0.75) : AppTheme.Effects.glowShadow,
+            radius: isHighlighted ? 32 : AppTheme.Effects.glowShadowRadius
         )
+        .animation(.easeInOut(duration: 0.25), value: isHighlighted)
     }
 }
 
 // MARK: - Variantes Pre-configuradas
 extension GlowingOrbView {
     /// Orbe grande para la Dropzone (Vista 1) con ícono de subida
-    static var uploadOrb: GlowingOrbView {
-        GlowingOrbView(systemName: "arrow.up.to.line")
+    static func uploadOrb(isHighlighted: Bool = false) -> GlowingOrbView {
+        GlowingOrbView(systemName: "arrow.up.to.line", isHighlighted: isHighlighted)
     }
 
     /// Orbe grande para la Vista Completada (Vista 3) con checkmark
@@ -72,7 +81,15 @@ extension GlowingOrbView {
 #Preview("Upload Orb") {
     ZStack {
         AppTheme.Gradients.mainBackground
-        GlowingOrbView.uploadOrb
+        GlowingOrbView.uploadOrb()
+    }
+    .frame(width: 400, height: 400)
+}
+
+#Preview("Upload Orb Highlighted") {
+    ZStack {
+        AppTheme.Gradients.mainBackground
+        GlowingOrbView.uploadOrb(isHighlighted: true)
     }
     .frame(width: 400, height: 400)
 }
@@ -92,4 +109,3 @@ extension GlowingOrbView {
     }
     .frame(width: 100, height: 100)
 }
-
