@@ -47,12 +47,12 @@ struct GlowingOrbView: View {
                 )
                 .frame(width: diameter, height: diameter)
 
-            // Capa 5: Ícono oficial de Figma (IconoFlechaFigma) centrado matemáticamente (165 x 165 pt)
+            // Capa 5: Ícono oficial de Figma (IconoFlechaFigma) centrado matemáticamente (132 x 132 pt, -20%)
             Image("UploadArrow")
                 .renderingMode(.template)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 165, height: 165)
+                .frame(width: 132, height: 132)
                 .foregroundStyle(Color.white)
         }
         .frame(width: diameter, height: diameter)
