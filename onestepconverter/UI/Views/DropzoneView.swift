@@ -117,9 +117,9 @@ struct DropzoneView: View {
 
     private var backgroundLights: some View {
         ZStack {
-            // Luz superior izquierda (Figma: W 591, H 591, #2E3C6A)
+            // Luz superior izquierda (Figma: W 591, H 591, #2E3C6A) al 40%
             Circle()
-                .fill(AppTheme.Colors.backgroundLight)
+                .fill(AppTheme.Colors.backgroundLight.opacity(0.40))
                 .frame(
                     width: AppTheme.Dimensions.backgroundLightDiameter,
                     height: AppTheme.Dimensions.backgroundLightDiameter
@@ -127,9 +127,9 @@ struct DropzoneView: View {
                 .blur(radius: AppTheme.Dimensions.backgroundLightBlur)
                 .offset(x: -240, y: -190)
 
-            // Luz inferior derecha (Figma: W 591, H 591, #2E3C6A)
+            // Luz inferior derecha (Figma: W 591, H 591, #2E3C6A) al 40%
             Circle()
-                .fill(AppTheme.Colors.backgroundLight)
+                .fill(AppTheme.Colors.backgroundLight.opacity(0.40))
                 .frame(
                     width: AppTheme.Dimensions.backgroundLightDiameter,
                     height: AppTheme.Dimensions.backgroundLightDiameter

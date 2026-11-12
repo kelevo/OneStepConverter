@@ -95,10 +95,10 @@ enum AppTheme {
 
     // MARK: - Tipografía
     enum Typography {
-        /// Título principal — "ARRASTRA TUS VÍDEOS AQUÍ" (Inter / SF Pro Display Bold 22pt)
-        static let screenTitleFont = Font.custom("Inter-Bold", size: 22)
-        static let screenTitleFallback = Font.system(size: 22, weight: .bold, design: .default)
-        static let screenTitleTracking: CGFloat = 2.5
+        /// Título principal — "ARRASTRA TUS VÍDEOS AQUÍ" (Inter / SF Pro Display Bold 29pt, +30%)
+        static let screenTitleFont = Font.custom("Inter-Bold", size: 29)
+        static let screenTitleFallback = Font.system(size: 29, weight: .bold, design: .default)
+        static let screenTitleTracking: CGFloat = 2.0
 
         /// Botón cápsula — "SELECCIONAR CARPETA" (Inter / SF Pro Semibold 13pt)
         static let buttonFont = Font.custom("Inter-SemiBold", size: 13)
@@ -118,8 +118,8 @@ enum AppTheme {
         /// Diámetro del orbe central (Figma: W 222, H 222)
         static let orbDiameter: CGFloat = 222
 
-        /// Espaciado exacto entre título y orbe (Figma: 50 pt)
-        static let titleToOrbSpacing: CGFloat = 50
+        /// Espaciado exacto entre título y orbe (Figma: 68 pt para posición elevada)
+        static let titleToOrbSpacing: CGFloat = 68
 
         /// Espaciado exacto entre orbe y botón (Figma: 41 pt)
         static let orbToButtonSpacing: CGFloat = 41
