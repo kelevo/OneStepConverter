@@ -1,17 +1,21 @@
 //
-//  onestepconverterApp.swift
-//  onestepconverter
+//  OneStepConverterApp.swift
+//  OneStepConverter
 //
-//  Created by Patrick Jhonatan Hernandez Blanco on 12/11/26.
+//  Punto de entrada de la aplicación.
+//  Ventana fija 760×560 con barra de título oculta.
 //
 
 import SwiftUI
 
 @main
-struct onestepconverterApp: App {
+struct OneStepConverterApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainContainerView()
         }
+        .windowResizability(.contentSize)
+        .defaultSize(width: 760, height: 560)
+        .windowStyle(.hiddenTitleBar)
     }
 }
