@@ -32,6 +32,7 @@ Anteriormente, normalizar y comprimir videos requería hasta tres herramientas i
 ### La solución en un solo paso
 **OneStepConverter** unifica todo este pipeline en una sola pasada directa:
 - **Inspección automática (`ffprobe`):** Detección de códecs de video/audio, dimensiones, bitrate y duración exacta.
+- **Control de Lote y Límite de 40 Videos:** Ingesta inteligente por arrastre o selector nativo de carpetas, con escaneo recursivo y validación de lote máximo de 40 videos con feedback visual de alerta.
 - **Normalización + Compresión unificada:** Convierte cualquier formato a `.mp4` universal ("tipo Android": H.264 + AAC + `faststart`) con compresión balanceada por CPU (`libx264`) o acelerada por GPU (`VideoToolbox`).
 - **Validación de integridad:** Comprobación estricta del resultado antes de interactuar con el archivo original.
 - **Limpieza segura:** Envío automático del original a la Papelera de macOS mediante `FileManager.trashItem`.
@@ -70,6 +71,16 @@ La interfaz cuenta con una estética **Dark Mode espacial** con acentos neón y 
 - **Superficies Glass:** Acabado translúcido `#1F2951` con borde difuso del 15%.
 - **Acento Neón:** Resplandores púrpuras vibrantes (`#7C3AED` a `#8B5CF6`).
 - **Ventana Unificada:** Dimensiones fijas de `760 x 560 pt` con barra de título integrada y controles de ventana nativos.
+
+---
+
+## 🚦 Estado de las Fases (Roadmap)
+
+- [x] **Fase 1:** Andamiaje del proyecto macOS, arquitectura de capas y sistema de diseño base Figma.
+- [x] **Fase 2:** Perfeccionamiento visual milimétrico: orbe Liquid Glass nativo Apple, tipografía Inter, luces de fondo y resplandor neón pulsante continuo en bucle.
+- [x] **Fase 3:** Ingesta por Drag & Drop y NSOpenPanel, inspección asíncrona con `ffprobe`, validación de límite de 40 videos con alerta roja y pantalla de confirmación.
+- [ ] **Fase 4:** Motor de conversión `ffmpeg`, ejecución en tiempo real con monitoreo de progreso/ETA y cola de videos activa (`ConvertingView`).
+- [ ] **Fase 5:** Pantalla de finalización (`CompletedView`), envío seguro a Papelera de originales y notificaciones del sistema.
 
 ---
 

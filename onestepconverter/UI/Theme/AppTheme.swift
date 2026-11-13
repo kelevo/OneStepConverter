@@ -48,6 +48,16 @@ enum AppTheme {
         static let glowBorder       = Color.white.opacity(0.15)
         /// Borde del orbe brillante (lila)
         static let orbBorder        = Color(hex: "#8B5CF6").opacity(0.4)
+
+        // Botón cancelar y alertas de error (Fase 3)
+        /// Rojo del botón de cancelar (#850002)
+        static let cancelRed        = Color(hex: "#850002")
+        /// Sombra del botón de cancelar (#FF0004 al 25%)
+        static let cancelRedGlow    = Color(hex: "#FF0004").opacity(0.25)
+        /// Rojo vibrante para estado de límite excedido (#EF4444)
+        static let errorRed         = Color(hex: "#EF4444")
+        /// Rojo oscuro para degradado de error (#DC2626)
+        static let errorRedDark     = Color(hex: "#DC2626")
     }
 
     // MARK: - Degradados
@@ -107,6 +117,12 @@ enum AppTheme {
 
         /// Título de ventana — "OneStepConverter" (12pt regular)
         static let windowTitleFont = Font.custom("Inter-Regular", size: 12)
+
+        /// Contador de videos dentro del orbe (Fase 3 — ConfirmarCompresion)
+        static let counterFont = Font.custom("Inter-Regular_Bold", size: 48)
+        static let counterFontFallback = Font.custom("Inter", size: 48).weight(.bold)
+        static let counterLabelFont = Font.custom("Inter-Regular", size: 14)
+        static let counterLabelFontFallback = Font.custom("Inter", size: 14)
     }
 
     // MARK: - Dimensiones (Extraídas de Figma)
@@ -114,6 +130,10 @@ enum AppTheme {
         /// Tamaño de la ventana
         static let windowWidth: CGFloat = 760
         static let windowHeight: CGFloat = 560
+
+        /// Área activa de arrastre central (Dropzone)
+        static let dropzoneActiveWidth: CGFloat = 460
+        static let dropzoneActiveHeight: CGFloat = 260
 
         /// Diámetro del orbe central (Figma: W 222, H 222)
         static let orbDiameter: CGFloat = 222

@@ -3,14 +3,27 @@
 //  OneStepConverter
 //
 //  Orbe circular Liquid Glass con APIs nativas de Apple (.ultraThinMaterial),
-//  ícono de Figma al 150% de tamaño y resplandor neón morado de alta intensidad.
+//  soporte para ícono de flecha, ícono de carga y contador de videos (Fase 3).
 //
 
 import SwiftUI
 
+/// Tipo de contenido visual dentro del orbe Liquid Glass
+enum OrbContentType: Equatable {
+    case uploadArrow
+    case addingIcon
+    case counter(Int)
+}
+
 struct GlowingOrbView: View {
     var diameter: CGFloat = AppTheme.Dimensions.orbDiameter
+    var contentType: OrbContentType = .uploadArrow
+    var accentColor: Color = AppTheme.Colors.neonPurple
     var isHighlighted: Bool = false
+
+    private var isErrorState: Bool {
+        accentColor == AppTheme.Colors.errorRed
+    }
 
     var body: some View {
         ZStack {
@@ -19,9 +32,13 @@ struct GlowingOrbView: View {
                 .fill(.ultraThinMaterial)
                 .frame(width: diameter, height: diameter)
 
-            // Capa 2: Tinte violeta espacial translúcido (#3B3486 al 15%)
+            // Capa 2: Tinte espacial translúcido (violeta o rojo si es error)
             Circle()
-                .fill(AppTheme.Colors.glassOrbFill)
+                .fill(
+                    isErrorState
+                        ? AppTheme.Colors.errorRed.opacity(0.12)
+                        : AppTheme.Colors.glassOrbFill
+                )
                 .frame(width: diameter, height: diameter)
 
             // Capa 3: Gradiente de luz especular y refracción a -45° (Figma Glass effect)
@@ -42,40 +59,89 @@ struct GlowingOrbView: View {
             // Capa 4: Borde reflectivo exterior a -45°
             Circle()
                 .stroke(
-                    AppTheme.Gradients.glassStroke,
+                    isErrorState ? glassErrorStroke : AppTheme.Gradients.glassStroke,
                     lineWidth: 1.2
                 )
                 .frame(width: diameter, height: diameter)
 
-            // Capa 5: Ícono oficial de Figma (IconoFlechaFigma) centrado matemáticamente (132 x 132 pt)
+            // Capa 5: Contenido central según el estado
+            orbContent
+        }
+        .frame(width: diameter, height: diameter)
+        .scaleEffect(isHighlighted ? 1.03 : 1.0)
+        .animation(.easeInOut(duration: 0.25), value: isHighlighted)
+        .animation(.easeInOut(duration: 0.3), value: accentColor)
+    }
+
+    // MARK: - Contenido Central
+    @ViewBuilder
+    private var orbContent: some View {
+        switch contentType {
+        case .uploadArrow:
             Image("UploadArrow")
                 .renderingMode(.template)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 132, height: 132)
                 .foregroundStyle(Color.white)
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+
+        case .addingIcon:
+            Image("IconoAgregando")
+                .renderingMode(.template)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 132, height: 132)
+                .foregroundStyle(Color.white)
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
+
+        case .counter(let count):
+            VStack(spacing: 4) {
+                Text("\(count)")
+                    .font(AppTheme.Typography.counterFontFallback)
+                    .foregroundStyle(Color.white)
+
+                Text("Videos Agregados")
+                    .font(AppTheme.Typography.counterLabelFontFallback)
+                    .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+            .transition(.opacity.combined(with: .scale(scale: 0.95)))
         }
-        .frame(width: diameter, height: diameter)
-        .scaleEffect(isHighlighted ? 1.03 : 1.0)
-        .animation(.easeInOut(duration: 0.25), value: isHighlighted)
+    }
+
+    private var glassErrorStroke: LinearGradient {
+        LinearGradient(
+            colors: [
+                Color.white.opacity(0.65),
+                Color.white.opacity(0.20),
+                AppTheme.Colors.errorRed.opacity(0.70)
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
     }
 }
 
-// MARK: - Resplandor Neón Púrpura Pulsante Continuo (Breathing Glow)
+// MARK: - Resplandor Neón Pulsante Continuo (Breathing Glow con Acento Dinámico)
 struct OrbNeonGlowView: View {
     var diameter: CGFloat = AppTheme.Dimensions.orbDiameter
+    var accentColor: Color = AppTheme.Colors.neonPurple
     var isTargeted: Bool = false
     @State private var isPulsing: Bool = false
 
+    private var isErrorState: Bool {
+        accentColor == AppTheme.Colors.errorRed
+    }
+
     var body: some View {
         ZStack {
-            // Halo exterior difuso de gran alcance (morado intenso) que respira en bucle
+            // Halo exterior difuso de gran alcance que respira en bucle
             Circle()
                 .fill(
                     RadialGradient(
                         colors: [
-                            AppTheme.Colors.neonPurple.opacity(isTargeted ? 0.98 : (isPulsing ? 0.92 : 0.65)),
-                            AppTheme.Colors.accentPurple.opacity(isTargeted ? 0.80 : (isPulsing ? 0.65 : 0.35)),
+                            outerColor1.opacity(isTargeted ? 0.98 : (isPulsing ? 0.92 : 0.65)),
+                            outerColor2.opacity(isTargeted ? 0.80 : (isPulsing ? 0.65 : 0.35)),
                             Color.clear
                         ],
                         center: .center,
@@ -91,8 +157,8 @@ struct OrbNeonGlowView: View {
                 .fill(
                     RadialGradient(
                         colors: [
-                            AppTheme.Colors.neonPurpleLight.opacity(isTargeted ? 0.90 : (isPulsing ? 0.82 : 0.50)),
-                            AppTheme.Colors.neonPurple.opacity(isTargeted ? 0.65 : (isPulsing ? 0.50 : 0.25)),
+                            coreColor1.opacity(isTargeted ? 0.90 : (isPulsing ? 0.82 : 0.50)),
+                            coreColor2.opacity(isTargeted ? 0.65 : (isPulsing ? 0.50 : 0.25)),
                             Color.clear
                         ],
                         center: .center,
@@ -109,7 +175,25 @@ struct OrbNeonGlowView: View {
                 isPulsing = true
             }
         }
+        .animation(.easeInOut(duration: 0.35), value: accentColor)
         .allowsHitTesting(false)
+    }
+
+    // MARK: - Paleta Dinámica según Estado
+    private var outerColor1: Color {
+        isErrorState ? AppTheme.Colors.errorRed : AppTheme.Colors.neonPurple
+    }
+
+    private var outerColor2: Color {
+        isErrorState ? AppTheme.Colors.errorRedDark : AppTheme.Colors.accentPurple
+    }
+
+    private var coreColor1: Color {
+        isErrorState ? AppTheme.Colors.errorRed : AppTheme.Colors.neonPurpleLight
+    }
+
+    private var coreColor2: Color {
+        isErrorState ? AppTheme.Colors.errorRedDark : AppTheme.Colors.neonPurple
     }
 }
 
@@ -117,8 +201,6 @@ struct OrbNeonGlowView: View {
     ZStack {
         Color(hex: "#000320")
             .ignoresSafeArea()
-        OrbNeonGlowView(isTargeted: false)
-        GlowingOrbView(isHighlighted: false)
+        GlowingOrbView(contentType: .counter(20))
     }
-    .frame(width: 400, height: 400)
 }

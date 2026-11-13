@@ -84,9 +84,22 @@ La interfaz sigue una estética **Dark Mode espacial / neón púrpura translu
 ### Estados de la Interfaz (3 Vistas Principales)
 
 #### Vista 1: Inicio / Dropzone (`Inicio.png`)
-- **Título Superior:** `ARRASTRA TUS VÍDEOS AQUÍ` (Bold, Uppercase, Tracking amplio, `22pt`).
-- **Elemento Central:** Botón/Orbe circular grande (`180 x 180 pt`) con relleno degradado púrpura translúcido, borde fino brillante (`1pt` blanco/lila) y resplandor difuso exterior. En su interior: ícono blanco de subida/bandeja (`arrow.up.to.line` / upload tray). Toda el área de la ventana actúa como zona activa de Drag & Drop.
-- **Acción Secundaria:** Botón tipo cápsula (`SELECCIONAR CARPETA`) debajo del orbe, con fondo `#1E2246`, esquinas redondeadas (`12pt`) y apertura de `NSOpenPanel` (permitiendo elegir carpetas o múltiples archivos).
+- **Título Superior:** `ARRASTRA TUS VÍDEOS AQUÍ` (Bold, Uppercase, Tracking amplio, `30pt`).
+- **Elemento Central:** Botón/Orbe circular Liquid Glass (`222 x 222 pt`) con `.ultraThinMaterial`, tinte glass `#3B3486` (12%), borde reflectivo a -45° y resplandor neón pulsante continuo en bucle. En su interior: ícono oficial `UploadArrow` (132x132 pt).
+- **Zona Activa de Drag & Drop:** Rectángulo delimitado de `~460 x 260 pt` centrado alrededor del orbe. Arrastrar dentro activa el estado `.draggingOver` (`IconoAgregando`).
+- **Acción Secundaria:** Botón tipo cápsula (`SELECCIONAR CARPETA`) debajo del orbe, con fondo `#1F2951`, esquinas redondeadas (`14pt`) y apertura de `NSOpenPanel` con advertencia de límite de 40 videos.
+
+#### Vista 1.5: Confirmación de Lote (`ConfirmarCompresion.png`)
+- **Orbe Central:** Muestra el número de videos agregados en grande (`48pt`, Bold) y subtítulo `Videos Agregados` (`14pt`, `#94A3B8`).
+- **Botonera de Acción:**
+  - Botón principal: `COMPRIMIR Y CONVERTIR` (`250 x 43 pt`, fondo `#1F2951`, borde brillante).
+  - Botón de cancelación: Circular (`43 x 43 pt`), fondo `#850002`, borde sutil, ícono `IconoClose` y sombra Figma (`X: 0, Y: 10, blur: 60, spread: 0, color: #FF0004` al 25%).
+- **Límite Estricto de 40 Videos:**
+  - Si el usuario arrastra o selecciona un lote que haga superar 40 videos en total, **se rechaza el lote entrante por completo**.
+  - El título cambia a `MÁXIMO 40 VIDEOS`.
+  - El orbe y su resplandor neón cambian a rojo neón `#EF4444`.
+  - Un temporizador cancelable de **6 segundos** restaura automáticamente la vista al estado previo.
+- **Reglas de Ingesta:** Escaneo recursivo de extensiones válidas (`.mp4`, `.mov`, `.avi`, `.mkv`, `.m4v`, `.webm`, `.flv`, `.wmv`), archivos corruptos se descartan silenciosamente y se permiten archivos duplicados.
 
 #### Vista 2: Procesando / Cola de Conversión (`Convirtiendo.png`)
 - **Título Superior:** `CONVIRTIENDO` (Bold, Uppercase, `24pt`).
