@@ -13,6 +13,7 @@ enum OrbContentType: Equatable {
     case uploadArrow
     case addingIcon
     case counter(Int)
+    case successCheckmark
 }
 
 struct GlowingOrbView: View {
@@ -108,6 +109,15 @@ struct GlowingOrbView: View {
                     .foregroundStyle(Color.white.opacity(0.60))
             }
             .transition(.opacity.combined(with: .scale(scale: 0.95)))
+
+        case .successCheckmark:
+            Image("IconoSuccessFigma")
+                .renderingMode(.template)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: diameter * 0.45, height: diameter * 0.45)
+                .foregroundStyle(Color.white)
+                .transition(.opacity.combined(with: .scale(scale: 0.95)))
         }
     }
 

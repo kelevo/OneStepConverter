@@ -44,6 +44,7 @@ En lugar de convertir a `.mp4` $
 ightarrow$ comprimir a `.mov` $
 ightarrow$ remuxear a `.mp4`, realizar la conversión y compresión en **una sola pasada**:
 - **Compatibilidad Universal ("Tipo Android"):** Contenedor `.mp4`, perfil de video `H.264` (`yuv420p` para compatibilidad total en cualquier dispositivo/reproductor), audio `AAC` (`128k`, `44.1kHz`/`48kHz`) y flag `-movflags +faststart`.
+- **Regla de Umbral de Compresión (< 300MB):** Los videos con peso menor a 300 MB **no se comprimen** (para evitar degradación innecesaria o aumento de tamaño). Si el video ya es compatible, se remuxea instantáneamente (`-c copy`); si requiere conversión (por ej. `.avi`, `.mkv`, `.ts`), se transcodifica en alta fidelidad (`-crf 18`) sin compresión agresiva.
 - **Archivo Temporal:** Escribir siempre en `<nombre_original>_onestep_temp.mp4` en el mismo directorio de origen.
 - **Comando Base FFmpeg (Modo Equilibrado / Alta Compresión):**
   ```bash
@@ -96,7 +97,7 @@ La interfaz sigue una estética **Dark Mode espacial / neón púrpura translu
   2. `Modo privado`: Switch estilo píldora con acento púrpura neón (`#8B5CF6`), encendido por defecto. Al activarse, los nombres reales de los videos se enmascaran como "Video 1", "Video 2", etc. durante la conversión.
   3. `Formato`: Selector en cápsula blanca (`#FFFFFF`) con texto oscuro `#000320` y menú desplegable limpio (`MP4`, `MOV`, `MP3`). MP4 por defecto.
 - **Botonera de Acción:**
-  - Botón izquierdo `CANCELAR`: Cápsula roja oscura (`#7F0909`, `150 x 43 pt`) con resplandor sutil rojizo y texto blanco Bold. Vacía la cola, restablece opciones por defecto y regresa a la vista inicial.
+  - Botón izquierdo `CANCELAR`: Cápsula roja oscura (`#850002`, `150 x 43 pt`) con resplandor neón (`#FF0004` al 25%, Blur 60, Y: 10, X: 0) y texto blanco Bold. Vacía la cola, restablece opciones por defecto y regresa a la vista inicial.
   - Botón derecho: Cápsula púrpura (`#1F2951`, `240 x 43 pt`) con borde brillante. Muestra dinámicamente `COMPRIMIR Y CONVERTIR` cuando la compresión está activa, o `CONVERTIR` cuando `shouldCompress == false`.
 - **Límite Estricto de 40 Videos:**
   - Si el usuario arrastra o selecciona un lote que haga superar 40 videos en total, **se rechaza el lote entrante por completo**.

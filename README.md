@@ -80,8 +80,8 @@ La interfaz cuenta con una estética **Dark Mode espacial** con acentos neón y 
 - [x] **Fase 2:** Perfeccionamiento visual milimétrico: orbe Liquid Glass nativo Apple, tipografía Inter, luces de fondo y resplandor neón pulsante continuo en bucle.
 - [x] **Fase 3:** Ingesta por Drag & Drop y NSOpenPanel, inspección asíncrona con `ffprobe` y validación de límite de 40 videos con alerta roja.
 - [x] **Fase 4:** Vista de confirmación y configuración del lote (`ConfirmarCompresion_2.png`): switches de compresión y modo privado, selector de formato desplegable (MP4, MOV, MP3) y botonera de acción con cápsula de cancelación roja y botón dinámico.
-- [ ] **Fase 5:** Motor de conversión `ffmpeg`, ejecución en tiempo real con monitoreo de progreso/ETA y cola de videos activa (`ConvertingView`).
-- [ ] **Fase 6:** Pantalla de finalización (`CompletedView`), envío seguro a Papelera de originales y notificaciones del sistema.
+- [x] **Fase 5:** Motor de conversión `ffmpeg`, ejecución en tiempo real con monitoreo de progreso/ETA, cola de videos activa (`ConvertingView`), validación de integridad previa, envío seguro a Papelera de macOS y pantalla de finalización (`CompletedView`).
+- [ ] **Fase 6:** Notificaciones nativas del sistema (`UserNotifications`) y pulido final de distribución.
 
 ---
 
