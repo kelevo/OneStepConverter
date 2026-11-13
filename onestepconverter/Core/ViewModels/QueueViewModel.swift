@@ -33,9 +33,9 @@ final class QueueViewModel {
     private var limitExceededTimerTask: Task<Void, Never>?
     private var stateBeforeExceeded: DropzoneUIState = .idle
 
-    /// Extensiones de video compatibles para ingesta
+    /// Extensiones de video compatibles para ingesta (.ts incluido)
     private let supportedExtensions: Set<String> = [
-        "mp4", "mov", "avi", "mkv", "m4v", "webm", "flv", "wmv"
+        "mp4", "mov", "avi", "mkv", "m4v", "webm", "flv", "wmv", "ts", "m2ts", "mts"
     ]
 
     // MARK: - Ingesta de Archivos y Carpetas
@@ -73,6 +73,9 @@ final class QueueViewModel {
         } else {
             uiState = .idle
         }
+
+        // Devolver el foco a la app tras la carga de videos
+        bringAppToFront()
     }
 
     /// Dispara el selector nativo de macOS para elegir carpeta o múltiples archivos
@@ -85,19 +88,39 @@ final class QueueViewModel {
         panel.allowsMultipleSelection = true
         panel.message = "Selecciona una carpeta o videos (máximo 40 videos por lote)."
         panel.prompt = "Seleccionar"
-        panel.allowedContentTypes = [
+
+        var allowedTypes: [UTType] = [
             .movie,
             .video,
             .quickTimeMovie,
             .mpeg4Movie,
-            .avi
+            .avi,
+            .mpeg2TransportStream
         ]
+        if let tsType = UTType(filenameExtension: "ts") {
+            allowedTypes.append(tsType)
+        }
+        if let mkvType = UTType(filenameExtension: "mkv") {
+            allowedTypes.append(mkvType)
+        }
+        if let webmType = UTType(filenameExtension: "webm") {
+            allowedTypes.append(webmType)
+        }
+        panel.allowedContentTypes = allowedTypes
 
         if panel.runModal() == .OK {
             let selectedURLs = panel.urls
             Task {
                 await self.ingestURLs(selectedURLs)
             }
+        }
+    }
+
+    /// Pone el foco del sistema en la aplicación y activa su ventana principal
+    private func bringAppToFront() {
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        if let window = NSApplication.shared.windows.first(where: { $0.canBecomeKey }) ?? NSApplication.shared.windows.first {
+            window.makeKeyAndOrderFront(nil)
         }
     }
 

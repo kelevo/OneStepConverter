@@ -103,7 +103,7 @@ La interfaz sigue una estética **Dark Mode espacial / neón púrpura translu
   - El título cambia a `MÁXIMO 40 VIDEOS`.
   - El orbe y su resplandor neón cambian a rojo neón `#EF4444`.
   - Un temporizador cancelable de **6 segundos** restaura automáticamente la vista al estado previo.
-- **Reglas de Ingesta:** Escaneo recursivo de extensiones válidas (`.mp4`, `.mov`, `.avi`, `.mkv`, `.m4v`, `.webm`, `.flv`, `.wmv`), archivos corruptos se descartan silenciosamente y se permiten archivos duplicados.
+- **Reglas de Ingesta:** Escaneo recursivo de extensiones válidas (`.mp4`, `.mov`, `.avi`, `.mkv`, `.m4v`, `.webm`, `.flv`, `.wmv`, `.ts`, `.m2ts`, `.mts`), archivos corruptos se descartan silenciosamente y se permiten archivos duplicados. Al completar la carga de videos, la aplicación solicita automáticamente el foco del sistema (`activate`) para traer la ventana al frente.
 
 #### Vista 2: Procesando / Cola de Conversión (`Convirtiendo.png`)
 - **Título Superior:** `CONVIRTIENDO` (Bold, Uppercase, `24pt`).

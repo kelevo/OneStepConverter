@@ -165,8 +165,19 @@ struct DropzoneView: View {
                 .font(AppTheme.Typography.optionLabelFontFallback)
                 .foregroundStyle(AppTheme.Colors.textPrimary)
 
-            ZStack {
-                // Cápsula visual blanca pura (#FFFFFF) con texto oscuro (#000320) y UN solo chevron
+            Menu {
+                ForEach(OutputFormat.allCases) { format in
+                    Button(action: {
+                        viewModel.options.outputFormat = format
+                    }) {
+                        if viewModel.options.outputFormat == format {
+                            Label(format.rawValue, systemImage: "checkmark")
+                        } else {
+                            Text(format.rawValue)
+                        }
+                    }
+                }
+            } label: {
                 HStack(spacing: 7) {
                     Text(viewModel.options.outputFormat.rawValue)
                         .font(AppTheme.Typography.formatPickerFontFallback)
@@ -180,27 +191,11 @@ struct DropzoneView: View {
                 .padding(.vertical, 6)
                 .background(AppTheme.Colors.formatCapsuleBackground)
                 .clipShape(Capsule())
-
-                // Menú nativo superpuesto para capturar clicks y desplegar las opciones
-                Menu {
-                    ForEach(OutputFormat.allCases) { format in
-                        Button(action: {
-                            viewModel.options.outputFormat = format
-                        }) {
-                            if viewModel.options.outputFormat == format {
-                                Label(format.rawValue, systemImage: "checkmark")
-                            } else {
-                                Text(format.rawValue)
-                            }
-                        }
-                    }
-                } label: {
-                    Color.clear
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                }
-                .menuStyle(.borderlessButton)
-                .menuIndicator(.hidden)
+                .contentShape(Capsule())
             }
+            .menuStyle(.borderlessButton)
+            .menuIndicator(.hidden)
+            .contentShape(Capsule())
             .fixedSize()
         }
     }
