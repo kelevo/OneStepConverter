@@ -3,6 +3,8 @@
 //  OneStepConverter
 //
 //  Fila individual de video en la cola de conversión (Fiel a Convirtiendo_2.png).
+//  Sin líneas divisorias, con orbe Liquid Glass y resplandor neón idéntico al de inicio,
+//  e icono de cancelar/eliminar persistente.
 //
 
 import SwiftUI
@@ -13,8 +15,9 @@ struct VideoRowView: View {
     let isPrivateMode: Bool
     let shouldCompress: Bool
     var onCancel: () -> Void
+    var onRemove: () -> Void
 
-    @State private var isCancelHovered: Bool = false
+    @State private var isActionHovered: Bool = false
 
     private var isQueued: Bool {
         item.status == .queued || item.status == .ready
@@ -24,90 +27,99 @@ struct VideoRowView: View {
         item.status == .converting
     }
 
-    var body: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 14) {
-                // 1. Orbe izquierdo de video (44 x 44 pt)
-                leftVideoOrb
-
-                // 2. Información del archivo (Título + Metadatos)
-                VStack(alignment: .leading, spacing: 3) {
-                    // Título (enmascarado en modo privado)
-                    Text(displayTitle)
-                        .font(Font.custom("Inter-Regular_SemiBold", size: 14))
-                        .foregroundStyle(Color.white)
-                        .lineLimit(1)
-
-                    // Subtítulo de metadatos enriquecidos
-                    metadataLine
-                }
-
-                Spacer()
-
-                // 3. Botón de cancelación individual (28 x 28 pt)
-                if item.status == .converting || isQueued {
-                    cancelButton
-                } else if item.status == .completed {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 18))
-                        .foregroundStyle(AppTheme.Colors.neonPurpleLight)
-                }
-            }
-
-            // 4. Barra de progreso individual delgada (4 pt)
-            NeonProgressBar(
-                progress: item.progress,
-                height: AppTheme.Dimensions.progressBarHeight
-            )
-            .opacity(isQueued ? 0.30 : 1.0)
-        }
-        .padding(.vertical, 6)
-        .padding(.horizontal, 4)
+    private var isFinished: Bool {
+        item.status == .completed || item.status == .cancelled
     }
 
-    // MARK: - Subviews
+    var body: some View {
+        HStack(spacing: 16) {
+            // 1. Orbe izquierdo con resplandor neón idéntico al contenedor de la flecha de inicio
+            leftVideoOrb
+
+            // 2. Información del archivo (Título + Metadatos)
+            VStack(alignment: .leading, spacing: 4) {
+                // Título (enmascarado en modo privado)
+                Text(displayTitle)
+                    .font(Font.custom("Inter-Regular_SemiBold", size: 14))
+                    .foregroundStyle(Color.white)
+                    .lineLimit(1)
+
+                // Subtítulo de metadatos enriquecidos
+                metadataLine
+            }
+
+            Spacer()
+
+            // 3. Botón cancelar / eliminar (28 x 28 pt con IconoCloseFigma)
+            actionButton
+        }
+        .padding(.vertical, 8)
+        .padding(.horizontal, 6)
+    }
+
+    // MARK: - Orbe de Video con Resplandor Neón de Inicio (Figma)
+    private var leftVideoOrb: some View {
+        ZStack {
+            // Resplandor neón pulsante continuo (exactamente el mismo del contenedor de flecha de inicio)
+            OrbNeonGlowView(
+                diameter: 44,
+                accentColor: AppTheme.Colors.neonPurple,
+                isTargeted: isActive
+            )
+            .opacity(isActive ? 1.0 : (isQueued ? 0.30 : 0.65))
+
+            // Orbe circular Liquid Glass
+            ZStack {
+                Circle()
+                    .fill(.ultraThinMaterial)
+                    .frame(width: 44, height: 44)
+
+                Circle()
+                    .fill(AppTheme.Colors.glassOrbFill.opacity(isActive ? 0.50 : 0.25))
+                    .frame(width: 44, height: 44)
+
+                // Gradiente diagonal de refracción
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.white.opacity(0.24),
+                                Color.white.opacity(0.04),
+                                Color.clear
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 44, height: 44)
+
+                // Borde reflectivo exterior
+                Circle()
+                    .stroke(AppTheme.Gradients.glassStroke, lineWidth: 1.0)
+                    .frame(width: 44, height: 44)
+
+                // Ícono de cámara de video oficial Figma (IconoVideoFigma.svg)
+                Image("IconoVideoFigma")
+                    .renderingMode(.template)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 22, height: 15)
+                    .foregroundStyle(Color.white)
+            }
+            .frame(width: 44, height: 44)
+        }
+        .frame(width: 44, height: 44)
+        .opacity(isQueued ? 0.38 : 1.0)
+    }
+
+    // MARK: - Subviews de Metadatos
 
     private var displayTitle: String {
         if isPrivateMode {
-            return "Video \(index + 1)"
+            return "Video \(index)"
         } else {
             return item.fileName
         }
-    }
-
-    private var leftVideoOrb: some View {
-        ZStack {
-            // Fondo orbe púrpura con borde
-            Circle()
-                .fill(
-                    isActive
-                        ? AppTheme.Colors.glassOrbFill.opacity(0.8)
-                        : AppTheme.Colors.buttonBackground.opacity(0.6)
-                )
-                .frame(width: 44, height: 44)
-
-            Circle()
-                .stroke(
-                    isActive
-                        ? AppTheme.Colors.neonPurpleLight.opacity(0.60)
-                        : Color.white.opacity(0.12),
-                    lineWidth: 1
-                )
-                .frame(width: 44, height: 44)
-
-            // Ícono de video centrado
-            Image("IconoVideoFigma")
-                .renderingMode(.template)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: 20, height: 20)
-                .foregroundStyle(Color.white)
-        }
-        .shadow(
-            color: isActive ? AppTheme.Colors.neonPurple.opacity(0.45) : Color.clear,
-            radius: 8
-        )
-        .opacity(isQueued ? 0.35 : 1.0)
     }
 
     private var metadataLine: some View {
@@ -200,23 +212,36 @@ struct VideoRowView: View {
         }
     }
 
-    private var cancelButton: some View {
-        Button(action: onCancel) {
+    // MARK: - Botón Acción (Cancelar en proceso / Eliminar de lista al finalizar)
+    private var actionButton: some View {
+        Button(action: {
+            if isFinished {
+                onRemove()
+            } else {
+                onCancel()
+            }
+        }) {
             ZStack {
                 Circle()
                     .fill(
-                        isCancelHovered
-                            ? AppTheme.Colors.buttonBackground.opacity(0.95)
+                        isActionHovered
+                            ? (isFinished ? AppTheme.Colors.buttonBackground.opacity(0.95) : AppTheme.Colors.cancelRed.opacity(0.85))
                             : AppTheme.Colors.glassSurfaceTranslucent
                     )
-                    .frame(width: 28, height: 28)
+                    .frame(
+                        width: AppTheme.Dimensions.cancelButtonDiameter,
+                        height: AppTheme.Dimensions.cancelButtonDiameter
+                    )
 
                 Circle()
                     .stroke(
-                        isCancelHovered ? Color.white.opacity(0.35) : AppTheme.Colors.glowBorder,
+                        isActionHovered ? Color.white.opacity(0.35) : AppTheme.Colors.glowBorder,
                         lineWidth: 1
                     )
-                    .frame(width: 28, height: 28)
+                    .frame(
+                        width: AppTheme.Dimensions.cancelButtonDiameter,
+                        height: AppTheme.Dimensions.cancelButtonDiameter
+                    )
 
                 Image("IconoCloseFigma")
                     .renderingMode(.template)
@@ -228,12 +253,11 @@ struct VideoRowView: View {
         }
         .buttonStyle(.plain)
         .contentShape(Circle())
-        .scaleEffect(isCancelHovered ? 1.08 : 1.0)
+        .scaleEffect(isActionHovered ? 1.08 : 1.0)
         .onHover { hovering in
             withAnimation(.easeInOut(duration: 0.2)) {
-                isCancelHovered = hovering
+                isActionHovered = hovering
             }
         }
     }
 }
-

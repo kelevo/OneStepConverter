@@ -318,6 +318,16 @@ final class QueueViewModel {
         }
     }
 
+    /// Elimina un ítem de la lista (para videos completados o descartados)
+    func removeItem(id: UUID) {
+        withAnimation(.easeInOut(duration: 0.25)) {
+            items.removeAll(where: { $0.id == id })
+            if items.isEmpty {
+                screenState = .dropzone
+            }
+        }
+    }
+
     // MARK: - Manejo de Estado de Límite Excedido (6 segundos)
 
     private func triggerLimitExceeded() {

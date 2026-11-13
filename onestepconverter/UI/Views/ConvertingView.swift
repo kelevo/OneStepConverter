@@ -25,8 +25,8 @@ struct ConvertingView: View {
                 // Título superior
                 Text("CONVIRTIENDO")
                     .screenTitleStyle()
-                    .padding(.top, 28)
-                    .padding(.bottom, 20)
+                    .padding(.top, 24)
+                    .padding(.bottom, 16)
 
                 // Lista de videos con desvanecimiento inferior suave
                 ScrollView(.vertical, showsIndicators: false) {
@@ -39,13 +39,16 @@ struct ConvertingView: View {
                                 shouldCompress: viewModel.options.shouldCompress,
                                 onCancel: {
                                     viewModel.cancelItem(id: item.id)
+                                },
+                                onRemove: {
+                                    viewModel.removeItem(id: item.id)
                                 }
                             )
                         }
                     }
                     .padding(.horizontal, 48)
                     .padding(.top, 4)
-                    .padding(.bottom, 24)
+                    .padding(.bottom, 20)
                 }
                 .mask(
                     LinearGradient(
@@ -59,21 +62,21 @@ struct ConvertingView: View {
                     )
                 )
 
-                Spacer(minLength: 8)
+                Spacer(minLength: 12)
 
-                // Footer de Progreso Global
+                // Footer de Progreso Global más elevado respecto al borde inferior
                 globalProgressFooter
-                    .padding(.bottom, 12)
+                    .padding(.bottom, 36)
             }
         }
     }
 
     // MARK: - Footer de Progreso Global (Convirtiendo_2.png)
     private var globalProgressFooter: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
             // Conteo global "X de Y videos"
             Text("\(viewModel.completedCount) de \(viewModel.items.count) videos")
-                .font(Font.custom("Inter-Regular_Bold", size: 17))
+                .font(Font.custom("Inter-Regular_Bold", size: 18))
                 .foregroundStyle(Color.white)
 
             // Tiempo restante total estimado
@@ -87,10 +90,10 @@ struct ConvertingView: View {
                 height: AppTheme.Dimensions.globalProgressBarHeight
             )
             .padding(.horizontal, 48)
-            .padding(.top, 4)
+            .padding(.top, 6)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 10)
+        .padding(.top, 10)
     }
 
     // MARK: - Luces Ambientales
