@@ -81,13 +81,14 @@ actor VideoProcessor {
 
         let startTime = Date()
         let totalMicros = item.durationSeconds * 1_000_000.0
+        let effectiveCompress = item.shouldApplyCompression(userOption: options.shouldCompress)
 
-        // Estimación inicial del tamaño de salida
+        // Estimación inicial del tamaño de salida (videos < 300MB no se comprimen)
         let initialEstimate: Int64 = {
             if options.outputFormat == .mp3 {
                 // ~128 kbps * duración
                 return Int64(item.durationSeconds * (16000))
-            } else if options.shouldCompress {
+            } else if effectiveCompress {
                 // Proyección base ~35% del tamaño original para CRF 26
                 return max(1024, Int64(Double(item.fileSizeBytes) * 0.35))
             } else {
@@ -210,9 +211,12 @@ actor VideoProcessor {
             "-i", item.sourceURL.path
         ]
 
+        // Regla de negocio: videos < 300MB no se comprimen, pero sí se convierten si se requiere
+        let shouldCompress = item.shouldApplyCompression(userOption: options.shouldCompress)
+
         switch options.outputFormat {
         case .mp4:
-            if options.shouldCompress {
+            if shouldCompress {
                 // Modo equilibrado / alta compresión compatible universal
                 args.append(contentsOf: [
                     "-c:v", "libx264",

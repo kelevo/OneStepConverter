@@ -236,18 +236,16 @@ final class QueueViewModel {
 
     /// Procesa secuencialmente cada video de la cola (1 a la vez)
     private func processQueue() async {
-        for index in items.indices {
-            // Verificar si el lote completo fue cancelado
-            if Task.isCancelled { break }
-
-            // Si el ítem ya fue cancelado por el usuario previamente, omitirlo
-            if items[index].status == .cancelled {
-                continue
+        while !Task.isCancelled {
+            // Buscar el siguiente ítem que esté en espera
+            guard let nextIndex = items.firstIndex(where: { $0.status == .queued || $0.status == .ready }) else {
+                break
             }
 
-            let item = items[index]
-            currentProcessingId = item.id
-            items[index].status = .converting
+            let item = items[nextIndex]
+            let itemId = item.id
+            currentProcessingId = itemId
+            items[nextIndex].status = .converting
 
             do {
                 // 1. Ejecutar FFmpeg con streaming de progreso
@@ -256,11 +254,12 @@ final class QueueViewModel {
                     options: options,
                     onProgress: { [weak self] progress, eta, estBytes in
                         Task { @MainActor [weak self] in
-                            guard let self = self, index < self.items.count, self.items[index].id == item.id else { return }
-                            self.items[index].progress = progress
-                            self.items[index].etaSeconds = eta
+                            guard let self = self,
+                                  let idx = self.items.firstIndex(where: { $0.id == itemId }) else { return }
+                            self.items[idx].progress = progress
+                            self.items[idx].etaSeconds = eta
                             if let est = estBytes {
-                                self.items[index].estimatedOutputBytes = est
+                                self.items[idx].estimatedOutputBytes = est
                             }
                         }
                     }
@@ -276,18 +275,24 @@ final class QueueViewModel {
                 // 3. Obtener peso final real del archivo generado
                 let finalSize = (try? FileManager.default.attributesOfItem(atPath: finalURL.path)[.size] as? Int64) ?? item.fileSizeBytes
 
-                items[index].actualOutputBytes = finalSize
-                items[index].progress = 1.0
-                items[index].etaSeconds = 0.0
-                items[index].status = .completed
+                if let idx = items.firstIndex(where: { $0.id == itemId }) {
+                    items[idx].actualOutputBytes = finalSize
+                    items[idx].progress = 1.0
+                    items[idx].etaSeconds = 0.0
+                    items[idx].status = .completed
+                }
 
             } catch is CancellationError {
-                items[index].status = .cancelled
+                if let idx = items.firstIndex(where: { $0.id == itemId }) {
+                    items[idx].status = .cancelled
+                }
             } catch {
-                if let procErr = error as? VideoProcessingError, case .cancelled = procErr {
-                    items[index].status = .cancelled
-                } else {
-                    items[index].status = .failed(error.localizedDescription)
+                if let idx = items.firstIndex(where: { $0.id == itemId }) {
+                    if let procErr = error as? VideoProcessingError, case .cancelled = procErr {
+                        items[idx].status = .cancelled
+                    } else {
+                        items[idx].status = .failed(error.localizedDescription)
+                    }
                 }
             }
         }
@@ -297,7 +302,7 @@ final class QueueViewModel {
         // Devolver el foco a la app tras finalizar la cola
         bringAppToFront()
 
-        // Transición automática a la pantalla de finalización (CompletedView)
+        // Transición automática a la pantalla de finalización (CompletedView / ConversionCompletada.png)
         withAnimation(.easeInOut(duration: 0.45)) {
             self.screenState = .completed
         }

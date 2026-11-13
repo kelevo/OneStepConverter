@@ -28,7 +28,7 @@ struct ConvertingView: View {
                     .padding(.top, 24)
                     .padding(.bottom, 16)
 
-                // Lista de videos con desvanecimiento inferior suave
+                // Lista de videos con desvanecimiento superior e inferior suave (Figma)
                 ScrollView(.vertical, showsIndicators: false) {
                     LazyVStack(spacing: 12) {
                         ForEach(Array(viewModel.items.enumerated()), id: \.element.id) { index, item in
@@ -47,14 +47,15 @@ struct ConvertingView: View {
                         }
                     }
                     .padding(.horizontal, 48)
-                    .padding(.top, 4)
+                    .padding(.top, 14)
                     .padding(.bottom, 20)
                 }
                 .mask(
                     LinearGradient(
                         stops: [
-                            .init(color: .black, location: 0.0),
-                            .init(color: .black, location: 0.88),
+                            .init(color: .clear, location: 0.0),
+                            .init(color: .black, location: 0.08),
+                            .init(color: .black, location: 0.90),
                             .init(color: .clear, location: 1.0)
                         ],
                         startPoint: .top,

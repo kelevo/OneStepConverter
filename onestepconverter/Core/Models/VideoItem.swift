@@ -128,4 +128,13 @@ nonisolated struct VideoItem: Identifiable, Sendable {
             return "Restan \(max(1, totalSecs)) segundos"
         }
     }
+
+    /// Umbral mínimo de tamaño de archivo para aplicar compresión: 300 MB
+    static let compressionThresholdBytes: Int64 = 300 * 1024 * 1024
+
+    /// Determina si este archivo califica para compresión según la opción del usuario y la regla de 300 MB
+    func shouldApplyCompression(userOption: Bool) -> Bool {
+        guard userOption else { return false }
+        return fileSizeBytes >= VideoItem.compressionThresholdBytes
+    }
 }

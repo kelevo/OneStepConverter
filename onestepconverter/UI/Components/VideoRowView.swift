@@ -32,28 +32,37 @@ struct VideoRowView: View {
     }
 
     var body: some View {
-        HStack(spacing: 16) {
-            // 1. Orbe izquierdo con resplandor neón idéntico al contenedor de la flecha de inicio
-            leftVideoOrb
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 16) {
+                // 1. Orbe izquierdo con resplandor neón idéntico al contenedor de la flecha de inicio
+                leftVideoOrb
 
-            // 2. Información del archivo (Título + Metadatos)
-            VStack(alignment: .leading, spacing: 4) {
-                // Título (enmascarado en modo privado)
-                Text(displayTitle)
-                    .font(Font.custom("Inter-Regular_SemiBold", size: 14))
-                    .foregroundStyle(Color.white)
-                    .lineLimit(1)
+                // 2. Información del archivo (Título + Metadatos)
+                VStack(alignment: .leading, spacing: 4) {
+                    // Título (enmascarado en modo privado)
+                    Text(displayTitle)
+                        .font(Font.custom("Inter-Regular_SemiBold", size: 14))
+                        .foregroundStyle(Color.white)
+                        .lineLimit(1)
 
-                // Subtítulo de metadatos enriquecidos
-                metadataLine
+                    // Subtítulo de metadatos enriquecidos
+                    metadataLine
+                }
+
+                Spacer()
+
+                // 3. Botón cancelar / eliminar (28 x 28 pt con IconoCloseFigma)
+                actionButton
             }
 
-            Spacer()
-
-            // 3. Botón cancelar / eliminar (28 x 28 pt con IconoCloseFigma)
-            actionButton
+            // 4. Barra de progreso individual estilo Figma (media_1794550191836_faf183fe.jpg)
+            NeonProgressBar(
+                progress: item.progress,
+                height: 4
+            )
+            .opacity(isActive ? 1.0 : (item.status == .completed ? 1.0 : 0.35))
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 6)
         .padding(.horizontal, 6)
     }
 
@@ -160,7 +169,12 @@ struct VideoRowView: View {
         }
     }
 
+    private var isCompressionApplicable: Bool {
+        item.shouldApplyCompression(userOption: shouldCompress)
+    }
+
     private var compressedSizeText: String? {
+        guard isCompressionApplicable else { return nil }
         if item.status == .completed, let actual = item.formattedActualFileSize {
             return actual
         } else if let estimated = item.formattedEstimatedFileSize {
@@ -187,7 +201,7 @@ struct VideoRowView: View {
     private var stageText: String {
         switch item.status {
         case .converting:
-            return shouldCompress ? "Comprimiendo" : "Convirtiendo"
+            return isCompressionApplicable ? "Comprimiendo" : "Convirtiendo"
         case .completed:
             return "Completado"
         case .cancelled:

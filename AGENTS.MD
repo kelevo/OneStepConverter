@@ -44,6 +44,7 @@ En lugar de convertir a `.mp4` $
 ightarrow$ comprimir a `.mov` $
 ightarrow$ remuxear a `.mp4`, realizar la conversión y compresión en **una sola pasada**:
 - **Compatibilidad Universal ("Tipo Android"):** Contenedor `.mp4`, perfil de video `H.264` (`yuv420p` para compatibilidad total en cualquier dispositivo/reproductor), audio `AAC` (`128k`, `44.1kHz`/`48kHz`) y flag `-movflags +faststart`.
+- **Regla de Umbral de Compresión (< 300MB):** Los videos con peso menor a 300 MB **no se comprimen** (para evitar degradación innecesaria o aumento de tamaño). Si el video ya es compatible, se remuxea instantáneamente (`-c copy`); si requiere conversión (por ej. `.avi`, `.mkv`, `.ts`), se transcodifica en alta fidelidad (`-crf 18`) sin compresión agresiva.
 - **Archivo Temporal:** Escribir siempre en `<nombre_original>_onestep_temp.mp4` en el mismo directorio de origen.
 - **Comando Base FFmpeg (Modo Equilibrado / Alta Compresión):**
   ```bash
