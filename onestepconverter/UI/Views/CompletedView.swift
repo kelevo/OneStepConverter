@@ -2,7 +2,8 @@
 //  CompletedView.swift
 //  OneStepConverter
 //
-//  Vista de proceso completado con confirmación visual de éxito y botón para convertir más videos (Figma: ConversionCompletada_2.png).
+//  Vista de proceso completado con métricas de reducción de almacenamiento real,
+//  detalle de peso antes/después y botón de acción (Figma: ConversionCompletada_3.png).
 //
 
 import SwiftUI
@@ -46,13 +47,17 @@ struct CompletedView: View {
 
                 Spacer()
 
-                // Botón principal: "CONVERTIR MÁS VÍDEOS"
+                // Bloque de métricas de reducción (Figma: ConversionCompletada_3.png)
+                metricsBlock
+                    .padding(.bottom, 24)
+
+                // Botón principal: "PROCESAR MÁS VÍDEOS"
                 Button(action: {
                     withAnimation(.easeInOut(duration: 0.3)) {
                         viewModel.convertMoreVideos()
                     }
                 }) {
-                    Text("CONVERTIR MÁS VÍDEOS")
+                    Text("PROCESAR MÁS VÍDEOS")
                         .font(AppTheme.Typography.buttonFontFallback)
                         .tracking(AppTheme.Typography.buttonTracking)
                         .foregroundStyle(AppTheme.Colors.textPrimary)
@@ -90,8 +95,35 @@ struct CompletedView: View {
                         isButtonHovered = hovering
                     }
                 }
-                .padding(.bottom, 64)
+                .padding(.bottom, 48)
             }
+        }
+    }
+
+    // MARK: - Bloque de Métricas (ConversionCompletada_3.png)
+    private var metricsBlock: some View {
+        VStack(spacing: 6) {
+            // Línea principal de ahorro
+            if viewModel.hasStorageSavings {
+                HStack(spacing: 5) {
+                    Text(viewModel.formattedTotalSaved)
+                        .font(Font.custom("Inter-Regular_Bold", size: 18))
+                        .foregroundStyle(Color.white)
+
+                    Text("en reducción")
+                        .font(Font.custom("Inter-Regular", size: 18))
+                        .foregroundStyle(Color.white)
+                }
+            } else {
+                Text("Conversión finalizada")
+                    .font(Font.custom("Inter-Regular_Bold", size: 18))
+                    .foregroundStyle(Color.white)
+            }
+
+            // Subtexto descriptivo antes/después
+            Text("Peso de los \(viewModel.completedVideosCount) videos antes: \(viewModel.formattedTotalOriginal) - después: \(viewModel.formattedTotalFinal)")
+                .font(Font.custom("Inter-Regular", size: 13))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
         }
     }
 
