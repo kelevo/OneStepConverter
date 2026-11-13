@@ -62,7 +62,7 @@ struct DropzoneView: View {
     private var currentTitleText: String {
         switch viewModel.uiState {
         case .limitExceeded:
-            return "SOLO SE PUEDEN AGREGAR MÁXIMO 40 VIDEOS"
+            return "MÁXIMO 40 VIDEOS"
         case .importing:
             return "AGREGANDO VIDEOS, ESPERA UN MOMENTO"
         case .idle, .draggingOver, .readyToConvert:

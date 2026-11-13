@@ -96,7 +96,7 @@ La interfaz sigue una estética **Dark Mode espacial / neón púrpura translu
   - Botón de cancelación: Circular (`43 x 43 pt`), fondo `#850002`, borde sutil, ícono `IconoClose` y sombra Figma (`X: 0, Y: 10, blur: 60, spread: 0, color: #FF0004` al 25%).
 - **Límite Estricto de 40 Videos:**
   - Si el usuario arrastra o selecciona un lote que haga superar 40 videos en total, **se rechaza el lote entrante por completo**.
-  - El título cambia a `SOLO SE PUEDEN AGREGAR MÁXIMO 40 VIDEOS`.
+  - El título cambia a `MÁXIMO 40 VIDEOS`.
   - El orbe y su resplandor neón cambian a rojo neón `#EF4444`.
   - Un temporizador cancelable de **6 segundos** restaura automáticamente la vista al estado previo.
 - **Reglas de Ingesta:** Escaneo recursivo de extensiones válidas (`.mp4`, `.mov`, `.avi`, `.mkv`, `.m4v`, `.webm`, `.flv`, `.wmv`), archivos corruptos se descartan silenciosamente y se permiten archivos duplicados.
