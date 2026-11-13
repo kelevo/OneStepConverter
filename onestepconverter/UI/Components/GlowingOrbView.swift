@@ -47,7 +47,7 @@ struct GlowingOrbView: View {
                 )
                 .frame(width: diameter, height: diameter)
 
-            // Capa 5: Ícono oficial de Figma (IconoFlechaFigma) centrado matemáticamente (132 x 132 pt, -20%)
+            // Capa 5: Ícono oficial de Figma (IconoFlechaFigma) centrado matemáticamente (132 x 132 pt)
             Image("UploadArrow")
                 .renderingMode(.template)
                 .resizable()
@@ -56,25 +56,26 @@ struct GlowingOrbView: View {
                 .foregroundStyle(Color.white)
         }
         .frame(width: diameter, height: diameter)
-        .scaleEffect(isHighlighted ? 1.05 : 1.0)
+        .scaleEffect(isHighlighted ? 1.03 : 1.0)
         .animation(.easeInOut(duration: 0.25), value: isHighlighted)
     }
 }
 
-// MARK: - Resplandor Neón Púrpura de Alta Intensidad
+// MARK: - Resplandor Neón Púrpura Pulsante Continuo (Breathing Glow)
 struct OrbNeonGlowView: View {
     var diameter: CGFloat = AppTheme.Dimensions.orbDiameter
-    var isHighlighted: Bool = false
+    var isTargeted: Bool = false
+    @State private var isPulsing: Bool = false
 
     var body: some View {
         ZStack {
-            // Halo exterior difuso de gran alcance (morado intenso)
+            // Halo exterior difuso de gran alcance (morado intenso) que respira en bucle
             Circle()
                 .fill(
                     RadialGradient(
                         colors: [
-                            AppTheme.Colors.neonPurple.opacity(isHighlighted ? 0.95 : 0.80),
-                            AppTheme.Colors.accentPurple.opacity(isHighlighted ? 0.70 : 0.50),
+                            AppTheme.Colors.neonPurple.opacity(isTargeted ? 0.98 : (isPulsing ? 0.92 : 0.65)),
+                            AppTheme.Colors.accentPurple.opacity(isTargeted ? 0.80 : (isPulsing ? 0.65 : 0.35)),
                             Color.clear
                         ],
                         center: .center,
@@ -83,15 +84,15 @@ struct OrbNeonGlowView: View {
                     )
                 )
                 .frame(width: diameter * 1.70, height: diameter * 1.70)
-                .blur(radius: isHighlighted ? 45 : 35)
+                .blur(radius: isPulsing ? 46 : 34)
 
             // Núcleo brillante concentrado
             Circle()
                 .fill(
                     RadialGradient(
                         colors: [
-                            AppTheme.Colors.neonPurpleLight.opacity(isHighlighted ? 0.85 : 0.65),
-                            AppTheme.Colors.neonPurple.opacity(isHighlighted ? 0.50 : 0.35),
+                            AppTheme.Colors.neonPurpleLight.opacity(isTargeted ? 0.90 : (isPulsing ? 0.82 : 0.50)),
+                            AppTheme.Colors.neonPurple.opacity(isTargeted ? 0.65 : (isPulsing ? 0.50 : 0.25)),
                             Color.clear
                         ],
                         center: .center,
@@ -100,10 +101,14 @@ struct OrbNeonGlowView: View {
                     )
                 )
                 .frame(width: diameter * 1.15, height: diameter * 1.15)
-                .blur(radius: 20)
+                .blur(radius: isPulsing ? 24 : 18)
         }
-        .scaleEffect(isHighlighted ? 1.06 : 1.0)
-        .animation(.easeInOut(duration: 0.25), value: isHighlighted)
+        .scaleEffect(isTargeted ? 1.10 : (isPulsing ? 1.08 : 0.96))
+        .onAppear {
+            withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
+                isPulsing = true
+            }
+        }
         .allowsHitTesting(false)
     }
 }
@@ -112,7 +117,7 @@ struct OrbNeonGlowView: View {
     ZStack {
         Color(hex: "#000320")
             .ignoresSafeArea()
-        OrbNeonGlowView(isHighlighted: false)
+        OrbNeonGlowView(isTargeted: false)
         GlowingOrbView(isHighlighted: false)
     }
     .frame(width: 400, height: 400)

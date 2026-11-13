@@ -95,10 +95,10 @@ enum AppTheme {
 
     // MARK: - Tipografía
     enum Typography {
-        /// Título principal — "ARRASTRA TUS VÍDEOS AQUÍ" (Inter Bold 38pt, +30%)
-        static let screenTitleFont = Font.custom("Inter-Regular_Bold", size: 38)
-        static let screenTitleFallback = Font.custom("Inter", size: 38).weight(.bold)
-        static let screenTitleTracking: CGFloat = 1.8
+        /// Título principal — "ARRASTRA TUS VÍDEOS AQUÍ" (Inter Bold 30pt, -20%)
+        static let screenTitleFont = Font.custom("Inter-Regular_Bold", size: 30)
+        static let screenTitleFallback = Font.custom("Inter", size: 30).weight(.bold)
+        static let screenTitleTracking: CGFloat = 2.0
 
         /// Botón cápsula — "SELECCIONAR CARPETA" (Inter SemiBold 13pt)
         static let buttonFont = Font.custom("Inter-Regular_SemiBold", size: 13)

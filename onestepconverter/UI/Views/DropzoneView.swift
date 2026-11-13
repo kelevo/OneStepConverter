@@ -35,26 +35,21 @@ struct DropzoneView: View {
                 Spacer()
                     .frame(height: AppTheme.Dimensions.titleToOrbSpacing)
 
-                // 2. Zona Central del Orbe y Destello
+                // 2. Zona Central del Orbe y Destello Pulsante Autónomo
                 ZStack {
-                    // Sombra / Destello Neón: Detrás del orbe, pero se expande hacia abajo por ENCIMA del botón
+                    // Resplandor Neón en Bucle (Breathing Glow): respira autónomamente y cae por encima del botón
                     OrbNeonGlowView(
                         diameter: AppTheme.Dimensions.orbDiameter,
-                        isHighlighted: isHighlighted
+                        isTargeted: isTargeted
                     )
                     .zIndex(2) // Encima del botón (zIndex 1), detrás del orbe (zIndex 3)
 
-                    // Contenedor Glass del Orbe (222x222 pt)
+                    // Contenedor Glass del Orbe (222x222 pt fijo y estable)
                     GlowingOrbView(
                         diameter: AppTheme.Dimensions.orbDiameter,
-                        isHighlighted: isHighlighted
+                        isHighlighted: isTargeted
                     )
                     .contentShape(Circle())
-                    .onHover { hovering in
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            isOrbHovered = hovering
-                        }
-                    }
                     .zIndex(3) // Encima del destello
                 }
                 .frame(
