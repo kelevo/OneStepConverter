@@ -96,6 +96,11 @@ nonisolated struct VideoItem: Identifiable, Sendable {
         return ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
     }
 
+    /// Alias directo a actualOutputBytes para claridad semántica
+    var finalSizeBytes: Int64? {
+        actualOutputBytes
+    }
+
     /// Formato legible de duración (ej. "02:45" o "1:15:30")
     var formattedDuration: String {
         let totalSeconds = Int(durationSeconds)

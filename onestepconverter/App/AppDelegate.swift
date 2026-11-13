@@ -9,6 +9,9 @@ import AppKit
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
+        // Solicitar permisos de notificación nativa
+        NotificationManager.shared.requestAuthorization()
+
         // Asignar el ícono del logo completo a tamaño 100% en el Dock Tile de macOS
         if let logoURL = Bundle.main.url(forResource: "Logo", withExtension: "png"),
            let image = NSImage(contentsOf: logoURL) {

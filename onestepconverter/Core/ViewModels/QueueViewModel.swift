@@ -100,6 +100,64 @@ final class QueueViewModel {
         }
     }
 
+    // MARK: - Propiedades Computadas de Métricas Finales (CompletedView)
+
+    /// Lista de videos procesados exitosamente
+    var completedItems: [VideoItem] {
+        items.filter { $0.status == .completed }
+    }
+
+    /// Cantidad de videos completados con éxito
+    var completedVideosCount: Int {
+        completedItems.count
+    }
+
+    /// Suma del tamaño original en bytes de los videos completados
+    var totalOriginalBytes: Int64 {
+        completedItems.reduce(0) { $0 + $1.fileSizeBytes }
+    }
+
+    /// Suma del tamaño final real en bytes de los videos completados
+    var totalFinalBytes: Int64 {
+        completedItems.reduce(0) { $0 + ($1.finalSizeBytes ?? $1.fileSizeBytes) }
+    }
+
+    /// Total de bytes ahorrados gracias a la compresión (mínimo 0)
+    var totalSavedBytes: Int64 {
+        max(0, totalOriginalBytes - totalFinalBytes)
+    }
+
+    /// Indica si hubo una reducción de almacenamiento medible
+    var hasStorageSavings: Bool {
+        totalSavedBytes > 0
+    }
+
+    /// Formato compacto de bytes para coincidir con Figma (ej. "10GB", "850MB", "1.4GB")
+    func formatBytesCompact(_ bytes: Int64) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        formatter.allowedUnits = [.useGB, .useMB, .useKB]
+        formatter.includesUnit = true
+        formatter.isAdaptive = true
+        let formatted = formatter.string(fromByteCount: bytes)
+        return formatted.replacingOccurrences(of: " ", with: "")
+    }
+
+    /// Reducción formateada compacta (ej. "10GB")
+    var formattedTotalSaved: String {
+        formatBytesCompact(totalSavedBytes)
+    }
+
+    /// Peso total original formateado compacto (ej. "20GB")
+    var formattedTotalOriginal: String {
+        formatBytesCompact(totalOriginalBytes)
+    }
+
+    /// Peso total final real formateado compacto (ej. "10GB")
+    var formattedTotalFinal: String {
+        formatBytesCompact(totalFinalBytes)
+    }
+
     private func isFailed(_ status: VideoStatus) -> Bool {
         if case .failed = status { return true }
         return false
@@ -301,6 +359,13 @@ final class QueueViewModel {
 
         // Devolver el foco a la app tras finalizar la cola
         bringAppToFront()
+
+        // Disparar notificación nativa de conclusión de lote
+        NotificationManager.shared.sendBatchCompletedNotification(
+            completedCount: self.completedVideosCount,
+            savedBytes: self.totalSavedBytes,
+            savedFormatted: self.formattedTotalSaved
+        )
 
         // Transición automática a la pantalla de finalización (CompletedView / ConversionCompletada.png)
         withAnimation(.easeInOut(duration: 0.45)) {

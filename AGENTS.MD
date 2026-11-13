@@ -120,10 +120,14 @@ La interfaz sigue una estética **Dark Mode espacial / neón púrpura translu
   - Subtexto de tiempo restante total: `20 minutos restantes` (`13pt`, `#94A3B8`).
   - Barra de progreso global en el borde inferior de la ventana (`6pt` de alto).
 
-#### Vista 3: Proceso Completado (`ConversionCompletada.png`)
-- **Título Superior:** `PROCESO COMPLETADO` (Bold, Uppercase, `22pt`).
-- **Elemento Central:** Orbe circular púrpura (`180 x 180 pt`) con resplandor exterior e ícono de verificación (`checkmark`) blanco de trazo grueso.
-- **Acción Principal:** Botón tipo cápsula (`CONVERTIR MÁS VÍDEOS`) que reinicia la cola y regresa a la Vista 1.
+#### Vista 3: Proceso Completado (`ConversionCompletada_3.png`)
+- **Título Superior:** `PROCESO COMPLETADO` (Bold, Uppercase, `22pt`, tracking amplio).
+- **Elemento Central:** Orbe circular púrpura Liquid Glass (`180 x 180 pt`) con resplandor exterior e ícono de verificación (`IconoSuccessFigma`) blanco de trazo grueso.
+- **Bloque de Métricas de Reducción:**
+  - Línea principal destacada: `"<ahorro> en reducción"` con cifra en Bold blanco (`18pt`) y etiqueta en Regular (ej. **10GB** en reducción), o `"Conversión finalizada"` si el ahorro es 0 bytes.
+  - Subtexto explicativo (`13pt`, `#94A3B8`): `"Peso de los X videos antes: A - después: B"` (ej. `"Peso de los 20 videos antes: 20GB - después: 10GB"`).
+- **Acción Principal:** Botón tipo cápsula (`PROCESAR MÁS VÍDEOS`) con fondo translúcido `#1F2951`, borde sutil blanco al 15% y esquinas redondeadas (`14pt`) que reinicia la cola y regresa a la Vista 1.
+- **Notificaciones del Sistema:** Notificación nativa con sonido discreto vía `UserNotifications` (`UNUserNotificationCenter`) indicando la cantidad de videos procesados y los gigabytes/megabytes reducidos.
 
 ---
 
