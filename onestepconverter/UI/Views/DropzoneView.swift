@@ -158,44 +158,20 @@ struct DropzoneView: View {
         .transition(.opacity.combined(with: .move(edge: .bottom)))
     }
 
-    // MARK: - Selector de Formato Cápsula Blanca (Figma)
+    // MARK: - Selector de Formato Nativo de Apple (Picker .menu)
     private var formatSelectorCapsule: some View {
         HStack(spacing: 8) {
             Text("Formato")
                 .font(AppTheme.Typography.optionLabelFontFallback)
                 .foregroundStyle(AppTheme.Colors.textPrimary)
 
-            Menu {
+            Picker("", selection: $viewModel.options.outputFormat) {
                 ForEach(OutputFormat.allCases) { format in
-                    Button(action: {
-                        viewModel.options.outputFormat = format
-                    }) {
-                        if viewModel.options.outputFormat == format {
-                            Label(format.rawValue, systemImage: "checkmark")
-                        } else {
-                            Text(format.rawValue)
-                        }
-                    }
+                    Text(format.rawValue).tag(format)
                 }
-            } label: {
-                HStack(spacing: 7) {
-                    Text(viewModel.options.outputFormat.rawValue)
-                        .font(AppTheme.Typography.formatPickerFontFallback)
-                        .foregroundStyle(AppTheme.Colors.formatCapsuleText)
-
-                    Image(systemName: "chevron.down")
-                        .font(.system(size: 8, weight: .bold))
-                        .foregroundStyle(AppTheme.Colors.formatCapsuleText)
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 6)
-                .background(AppTheme.Colors.formatCapsuleBackground)
-                .clipShape(Capsule())
-                .contentShape(Capsule())
             }
-            .menuStyle(.borderlessButton)
-            .menuIndicator(.hidden)
-            .contentShape(Capsule())
+            .pickerStyle(.menu)
+            .labelsHidden()
             .fixedSize()
         }
     }
