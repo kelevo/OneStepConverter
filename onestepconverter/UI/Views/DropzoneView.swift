@@ -117,7 +117,6 @@ struct DropzoneView: View {
         .onChange(of: isDropTargeted) { _, targeted in
             handleDropTargetChange(targeted)
         }
-        .animation(.easeInOut(duration: 0.3), value: viewModel.uiState)
     }
 
     private var currentOrbDiameter: CGFloat {
@@ -153,44 +152,57 @@ struct DropzoneView: View {
                     .tint(AppTheme.Colors.switchActive)
             }
 
-            // 3. Selector "Formato" (Cápsula Blanca + Menú)
-            HStack(spacing: 8) {
-                Text("Formato")
-                    .font(AppTheme.Typography.optionLabelFontFallback)
-                    .foregroundStyle(AppTheme.Colors.textPrimary)
+            // 3. Selector "Formato" (Cápsula Blanca + Menú con un solo chevron)
+            formatSelectorCapsule
+        }
+        .transition(.opacity.combined(with: .move(edge: .bottom)))
+    }
 
+    // MARK: - Selector de Formato Cápsula Blanca (Figma)
+    private var formatSelectorCapsule: some View {
+        HStack(spacing: 8) {
+            Text("Formato")
+                .font(AppTheme.Typography.optionLabelFontFallback)
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+
+            ZStack {
+                // Cápsula visual blanca pura (#FFFFFF) con texto oscuro (#000320) y UN solo chevron
+                HStack(spacing: 7) {
+                    Text(viewModel.options.outputFormat.rawValue)
+                        .font(AppTheme.Typography.formatPickerFontFallback)
+                        .foregroundStyle(AppTheme.Colors.formatCapsuleText)
+
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundStyle(AppTheme.Colors.formatCapsuleText)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 6)
+                .background(AppTheme.Colors.formatCapsuleBackground)
+                .clipShape(Capsule())
+
+                // Menú nativo superpuesto para capturar clicks y desplegar las opciones
                 Menu {
                     ForEach(OutputFormat.allCases) { format in
                         Button(action: {
                             viewModel.options.outputFormat = format
                         }) {
-                            HStack {
+                            if viewModel.options.outputFormat == format {
+                                Label(format.rawValue, systemImage: "checkmark")
+                            } else {
                                 Text(format.rawValue)
-                                if viewModel.options.outputFormat == format {
-                                    Image(systemName: "checkmark")
-                                }
                             }
                         }
                     }
                 } label: {
-                    HStack(spacing: 6) {
-                        Text(viewModel.options.outputFormat.rawValue)
-                            .font(AppTheme.Typography.formatPickerFontFallback)
-                            .foregroundStyle(AppTheme.Colors.formatCapsuleText)
-
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundStyle(AppTheme.Colors.formatCapsuleText)
-                    }
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 5)
-                    .background(AppTheme.Colors.formatCapsuleBackground)
-                    .clipShape(Capsule())
+                    Color.clear
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 .menuStyle(.borderlessButton)
+                .menuIndicator(.hidden)
             }
+            .fixedSize()
         }
-        .transition(.opacity.combined(with: .move(edge: .bottom)))
     }
 
     // MARK: - Botonera Inferior

@@ -174,7 +174,7 @@ enum AppTheme {
         /// Botones de acción en ConfirmarCompresion_2
         static let confirmCancelButtonWidth: CGFloat = 150
         static let confirmConvertButtonWidth: CGFloat = 240
-        static let optionsSpacing: CGFloat = 26
+        static let optionsSpacing: CGFloat = 38
 
         /// Luces de fondo (Figma: 591 x 591 pt con blur 400)
         static let backgroundLightDiameter: CGFloat = 591
