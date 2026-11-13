@@ -49,15 +49,27 @@ enum AppTheme {
         /// Borde del orbe brillante (lila)
         static let orbBorder        = Color(hex: "#8B5CF6").opacity(0.4)
 
-        // Botón cancelar y alertas de error (Fase 3)
+        // Botón cancelar y alertas de error (Fase 3 y 4)
         /// Rojo del botón de cancelar (#850002)
-        static let cancelRed        = Color(hex: "#850002")
+        static let cancelRed            = Color(hex: "#850002")
         /// Sombra del botón de cancelar (#FF0004 al 25%)
-        static let cancelRedGlow    = Color(hex: "#FF0004").opacity(0.25)
+        static let cancelRedGlow        = Color(hex: "#FF0004").opacity(0.25)
+        /// Cápsula roja oscura de cancelación en ConfirmarCompresion_2 (#7F0909)
+        static let cancelDarkRed        = Color(hex: "#7F0909")
+        /// Estado hover para cápsula roja oscura (#6E0B0B)
+        static let cancelDarkRedHover   = Color(hex: "#6E0B0B")
+        /// Sombra difusa para cápsula roja (#FF0004 al 20%)
+        static let cancelDarkRedGlow    = Color(hex: "#FF0004").opacity(0.20)
+        /// Color púrpura del switch activo (#8B5CF6)
+        static let switchActive         = Color(hex: "#8B5CF6")
+        /// Fondo de la cápsula de formato de salida (blanco puro)
+        static let formatCapsuleBackground = Color.white
+        /// Texto de la cápsula de formato de salida (#000320)
+        static let formatCapsuleText    = Color(hex: "#000320")
         /// Rojo vibrante para estado de límite excedido (#EF4444)
-        static let errorRed         = Color(hex: "#EF4444")
+        static let errorRed             = Color(hex: "#EF4444")
         /// Rojo oscuro para degradado de error (#DC2626)
-        static let errorRedDark     = Color(hex: "#DC2626")
+        static let errorRedDark         = Color(hex: "#DC2626")
     }
 
     // MARK: - Degradados
@@ -123,6 +135,14 @@ enum AppTheme {
         static let counterFontFallback = Font.custom("Inter", size: 48).weight(.bold)
         static let counterLabelFont = Font.custom("Inter-Regular", size: 14)
         static let counterLabelFontFallback = Font.custom("Inter", size: 14)
+
+        /// Etiquetas de opciones en ConfirmarCompresion_2 (14pt regular)
+        static let optionLabelFont = Font.custom("Inter-Regular", size: 14)
+        static let optionLabelFontFallback = Font.custom("Inter", size: 14)
+
+        /// Selector de formato (12pt SemiBold)
+        static let formatPickerFont = Font.custom("Inter-Regular_SemiBold", size: 12)
+        static let formatPickerFontFallback = Font.custom("Inter", size: 12).weight(.semibold)
     }
 
     // MARK: - Dimensiones (Extraídas de Figma)
@@ -135,8 +155,11 @@ enum AppTheme {
         static let dropzoneActiveWidth: CGFloat = 460
         static let dropzoneActiveHeight: CGFloat = 260
 
-        /// Diámetro del orbe central (Figma: W 222, H 222)
+        /// Diámetro del orbe central en pantalla de inicio (Figma: W 222, H 222)
         static let orbDiameter: CGFloat = 222
+
+        /// Diámetro del orbe central en vista de confirmación (Figma: W 180, H 180)
+        static let confirmOrbDiameter: CGFloat = 180
 
         /// Espaciado exacto entre título y orbe
         static let titleToOrbSpacing: CGFloat = 58
@@ -147,6 +170,11 @@ enum AppTheme {
         /// Botón "SELECCIONAR CARPETA" (Figma: 230 x 43 pt)
         static let buttonWidth: CGFloat = 230
         static let buttonHeight: CGFloat = 43
+
+        /// Botones de acción en ConfirmarCompresion_2
+        static let confirmCancelButtonWidth: CGFloat = 150
+        static let confirmConvertButtonWidth: CGFloat = 240
+        static let optionsSpacing: CGFloat = 38
 
         /// Luces de fondo (Figma: 591 x 591 pt con blur 400)
         static let backgroundLightDiameter: CGFloat = 591

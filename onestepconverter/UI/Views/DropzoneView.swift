@@ -3,7 +3,7 @@
 //  OneStepConverter
 //
 //  Vista principal de arrastrar y soltar archivos (pantalla de inicio e ingesta).
-//  Soporta estados idle, draggingOver, importing, limitExceeded y readyToConvert (Fase 3).
+//  Soporta estados idle, draggingOver, importing, limitExceeded y confirmación con configuración (Fase 4).
 //
 
 import SwiftUI
@@ -12,7 +12,6 @@ import UniformTypeIdentifiers
 struct DropzoneView: View {
     @Bindable var viewModel: QueueViewModel
 
-    @State private var isOrbHovered: Bool = false
     @State private var isPrimaryButtonHovered: Bool = false
     @State private var isCancelButtonHovered: Bool = false
     @State private var isDropTargeted: Bool = false
@@ -31,14 +30,26 @@ struct DropzoneView: View {
                 Spacer()
                     .frame(height: AppTheme.Dimensions.titleToOrbSpacing)
 
-                // 2. Zona Central Activa de Drag & Drop (460 x 260 pt)
+                // 2. Zona Central Activa de Drag & Drop
                 activeDropArea
                     .zIndex(3)
 
-                Spacer()
-                    .frame(height: AppTheme.Dimensions.orbToButtonSpacing)
+                // 3. Fila de Opciones en Modo Confirmación (ConfirmarCompresion_2.png)
+                if viewModel.uiState == .readyToConvert {
+                    Spacer()
+                        .frame(height: 24)
 
-                // 3. Botonera Inferior Reactiva
+                    optionsRow
+                        .zIndex(2)
+
+                    Spacer()
+                        .frame(height: 24)
+                } else {
+                    Spacer()
+                        .frame(height: AppTheme.Dimensions.orbToButtonSpacing)
+                }
+
+                // 4. Botonera Inferior Reactiva
                 bottomControls
                     .zIndex(1)
             }
@@ -73,17 +84,17 @@ struct DropzoneView: View {
     // MARK: - Zona Central Activa (Orbe + Resplandor + Receptor de Drop)
     private var activeDropArea: some View {
         ZStack {
-            // Resplandor Neón en Bucle (Breathing Glow con acento dinámico)
+            // Resplandor Neón en Bucle (Breathing Glow con acento dinámico y diámetro proporcional)
             OrbNeonGlowView(
-                diameter: AppTheme.Dimensions.orbDiameter,
+                diameter: currentOrbDiameter,
                 accentColor: currentAccentColor,
                 isTargeted: isGlowingIntensified
             )
             .zIndex(2)
 
-            // Contenedor Glass del Orbe (222x222 pt)
+            // Contenedor Glass del Orbe (222x222 pt en idle, 180x180 pt en confirmación)
             GlowingOrbView(
-                diameter: AppTheme.Dimensions.orbDiameter,
+                diameter: currentOrbDiameter,
                 contentType: currentOrbContent,
                 accentColor: currentAccentColor,
                 isHighlighted: isGlowingIntensified
@@ -91,10 +102,9 @@ struct DropzoneView: View {
             .contentShape(Circle())
             .zIndex(3)
         }
-        // Área rectangular activa definida para el Drag & Drop (~460 x 260 pt)
         .frame(
             width: AppTheme.Dimensions.dropzoneActiveWidth,
-            height: AppTheme.Dimensions.dropzoneActiveHeight
+            height: viewModel.uiState == .readyToConvert ? 210 : AppTheme.Dimensions.dropzoneActiveHeight
         )
         .contentShape(Rectangle())
         .onDrop(
@@ -109,22 +119,117 @@ struct DropzoneView: View {
         }
     }
 
+    private var currentOrbDiameter: CGFloat {
+        viewModel.uiState == .readyToConvert
+            ? AppTheme.Dimensions.confirmOrbDiameter
+            : AppTheme.Dimensions.orbDiameter
+    }
+
+    // MARK: - Fila Horizontal de Opciones (ConfirmarCompresion_2.png)
+    private var optionsRow: some View {
+        HStack(spacing: AppTheme.Dimensions.optionsSpacing) {
+            // 1. Switch "Comprimir"
+            HStack(spacing: 8) {
+                Text("Comprimir")
+                    .font(AppTheme.Typography.optionLabelFontFallback)
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                Toggle("", isOn: $viewModel.options.shouldCompress)
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .tint(AppTheme.Colors.switchActive)
+            }
+
+            // 2. Switch "Modo privado"
+            HStack(spacing: 8) {
+                Text("Modo privado")
+                    .font(AppTheme.Typography.optionLabelFontFallback)
+                    .foregroundStyle(AppTheme.Colors.textPrimary)
+
+                Toggle("", isOn: $viewModel.options.isPrivateMode)
+                    .labelsHidden()
+                    .toggleStyle(.switch)
+                    .tint(AppTheme.Colors.switchActive)
+            }
+
+            // 3. Selector "Formato" (Cápsula Blanca + Menú con un solo chevron)
+            formatSelectorCapsule
+        }
+        .transition(.opacity.combined(with: .move(edge: .bottom)))
+    }
+
+    // MARK: - Selector de Formato Nativo de Apple (Picker .menu)
+    private var formatSelectorCapsule: some View {
+        HStack(spacing: 8) {
+            Text("Formato")
+                .font(AppTheme.Typography.optionLabelFontFallback)
+                .foregroundStyle(AppTheme.Colors.textPrimary)
+
+            Picker("", selection: $viewModel.options.outputFormat) {
+                ForEach(OutputFormat.allCases) { format in
+                    Text(format.rawValue).tag(format)
+                }
+            }
+            .pickerStyle(.menu)
+            .labelsHidden()
+            .fixedSize()
+        }
+    }
+
     // MARK: - Botonera Inferior
     @ViewBuilder
     private var bottomControls: some View {
         if viewModel.uiState == .readyToConvert {
-            // Estado Confirmar Lote (ConfirmarCompresion.png): Botón de comprimir + Botón cancelar
-            HStack(spacing: 14) {
-                // Botón "COMPRIMIR Y CONVERTIR"
+            // Estado Confirmar Lote (ConfirmarCompresion_2.png): Dos cápsulas (CANCELAR + COMPRIMIR Y CONVERTIR)
+            HStack(spacing: 16) {
+                // Botón izquierdo "CANCELAR" (Cápsula roja #7F0909)
                 Button(action: {
-                    viewModel.startCompression()
+                    viewModel.cancelBatch()
                 }) {
-                    Text("COMPRIMIR Y CONVERTIR")
+                    Text("CANCELAR")
                         .font(AppTheme.Typography.buttonFontFallback)
                         .tracking(AppTheme.Typography.buttonTracking)
                         .foregroundStyle(AppTheme.Colors.textPrimary)
                         .frame(
-                            width: 250,
+                            width: AppTheme.Dimensions.confirmCancelButtonWidth,
+                            height: AppTheme.Dimensions.buttonHeight
+                        )
+                        .background(
+                            isCancelButtonHovered
+                                ? AppTheme.Colors.cancelDarkRedHover
+                                : AppTheme.Colors.cancelDarkRed
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: AppTheme.Dimensions.capsuleCornerRadius))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: AppTheme.Dimensions.capsuleCornerRadius)
+                                .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                        )
+                        .shadow(
+                            color: isCancelButtonHovered
+                                ? AppTheme.Colors.cancelDarkRedGlow
+                                : Color.clear,
+                            radius: 12
+                        )
+                }
+                .buttonStyle(.plain)
+                .contentShape(RoundedRectangle(cornerRadius: AppTheme.Dimensions.capsuleCornerRadius))
+                .scaleEffect(isCancelButtonHovered ? 1.02 : 1.0)
+                .onHover { hovering in
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        isCancelButtonHovered = hovering
+                    }
+                }
+
+                // Botón derecho "COMPRIMIR Y CONVERTIR" (o "CONVERTIR")
+                Button(action: {
+                    viewModel.startConversion()
+                }) {
+                    Text(viewModel.options.shouldCompress ? "COMPRIMIR Y CONVERTIR" : "CONVERTIR")
+                        .font(AppTheme.Typography.buttonFontFallback)
+                        .tracking(AppTheme.Typography.buttonTracking)
+                        .foregroundStyle(AppTheme.Colors.textPrimary)
+                        .frame(
+                            width: AppTheme.Dimensions.confirmConvertButtonWidth,
                             height: AppTheme.Dimensions.buttonHeight
                         )
                         .background(
@@ -143,7 +248,9 @@ struct DropzoneView: View {
                                 )
                         )
                         .shadow(
-                            color: isPrimaryButtonHovered ? AppTheme.Colors.neonPurple.opacity(0.40) : Color.clear,
+                            color: isPrimaryButtonHovered
+                                ? AppTheme.Colors.neonPurple.opacity(0.40)
+                                : Color.clear,
                             radius: 12
                         )
                 }
@@ -155,53 +262,8 @@ struct DropzoneView: View {
                         isPrimaryButtonHovered = hovering
                     }
                 }
-
-                // Botón de Cancelación circular (#850002 con sombra Figma #FF0004 al 25%)
-                Button(action: {
-                    viewModel.clearQueue()
-                }) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                isCancelButtonHovered
-                                    ? AppTheme.Colors.cancelRed.opacity(0.90)
-                                    : AppTheme.Colors.cancelRed
-                            )
-                            .frame(
-                                width: AppTheme.Dimensions.buttonHeight,
-                                height: AppTheme.Dimensions.buttonHeight
-                            )
-
-                        Circle()
-                            .stroke(Color.white.opacity(0.20), lineWidth: 1)
-                            .frame(
-                                width: AppTheme.Dimensions.buttonHeight,
-                                height: AppTheme.Dimensions.buttonHeight
-                            )
-
-                        Image("IconoClose")
-                            .renderingMode(.template)
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 14, height: 14)
-                            .foregroundStyle(Color.white)
-                    }
-                    .shadow(
-                        color: AppTheme.Colors.cancelRedGlow,
-                        radius: 30,
-                        x: 0,
-                        y: 10
-                    )
-                }
-                .buttonStyle(.plain)
-                .contentShape(Circle())
-                .scaleEffect(isCancelButtonHovered ? 1.06 : 1.0)
-                .onHover { hovering in
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        isCancelButtonHovered = hovering
-                    }
-                }
             }
+            .transition(.opacity.combined(with: .scale(scale: 0.98)))
         } else {
             // Estado estándar: "SELECCIONAR CARPETA"
             Button(action: {

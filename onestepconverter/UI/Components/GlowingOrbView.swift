@@ -3,7 +3,7 @@
 //  OneStepConverter
 //
 //  Orbe circular Liquid Glass con APIs nativas de Apple (.ultraThinMaterial),
-//  soporte para ícono de flecha, ícono de carga y contador de videos (Fase 3).
+//  soporte para ícono de flecha, ícono de carga y contador de videos (Fase 4).
 //
 
 import SwiftUI
@@ -76,13 +76,15 @@ struct GlowingOrbView: View {
     // MARK: - Contenido Central
     @ViewBuilder
     private var orbContent: some View {
+        let iconSize = diameter * (132.0 / 222.0)
+
         switch contentType {
         case .uploadArrow:
             Image("UploadArrow")
                 .renderingMode(.template)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 132, height: 132)
+                .frame(width: iconSize, height: iconSize)
                 .foregroundStyle(Color.white)
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
 
@@ -91,19 +93,19 @@ struct GlowingOrbView: View {
                 .renderingMode(.template)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 132, height: 132)
+                .frame(width: iconSize, height: iconSize)
                 .foregroundStyle(Color.white)
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
 
         case .counter(let count):
-            VStack(spacing: 4) {
+            VStack(spacing: diameter <= 180 ? 2 : 4) {
                 Text("\(count)")
-                    .font(AppTheme.Typography.counterFontFallback)
+                    .font(diameter <= 180 ? Font.custom("Inter", size: 44).weight(.bold) : AppTheme.Typography.counterFontFallback)
                     .foregroundStyle(Color.white)
 
                 Text("Videos Agregados")
-                    .font(AppTheme.Typography.counterLabelFontFallback)
-                    .foregroundStyle(AppTheme.Colors.textSecondary)
+                    .font(diameter <= 180 ? Font.custom("Inter", size: 13) : AppTheme.Typography.counterLabelFontFallback)
+                    .foregroundStyle(Color.white.opacity(0.60))
             }
             .transition(.opacity.combined(with: .scale(scale: 0.95)))
         }
@@ -122,58 +124,56 @@ struct GlowingOrbView: View {
     }
 }
 
-// MARK: - Resplandor Neón Pulsante Continuo (Breathing Glow con Acento Dinámico)
+// MARK: - Resplandor Neón Pulsante Continuo (Breathing Glow Autónomo)
 struct OrbNeonGlowView: View {
     var diameter: CGFloat = AppTheme.Dimensions.orbDiameter
     var accentColor: Color = AppTheme.Colors.neonPurple
     var isTargeted: Bool = false
-    @State private var isPulsing: Bool = false
 
     private var isErrorState: Bool {
         accentColor == AppTheme.Colors.errorRed
     }
 
     var body: some View {
-        ZStack {
-            // Halo exterior difuso de gran alcance que respira en bucle
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [
-                            outerColor1.opacity(isTargeted ? 0.98 : (isPulsing ? 0.92 : 0.65)),
-                            outerColor2.opacity(isTargeted ? 0.80 : (isPulsing ? 0.65 : 0.35)),
-                            Color.clear
-                        ],
-                        center: .center,
-                        startRadius: 30,
-                        endRadius: diameter * 0.95
+        PhaseAnimator([false, true]) { isPulsing in
+            ZStack {
+                // Halo exterior difuso de gran alcance que respira en bucle continuo
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                outerColor1.opacity(isTargeted ? 0.98 : (isPulsing ? 0.92 : 0.65)),
+                                outerColor2.opacity(isTargeted ? 0.80 : (isPulsing ? 0.65 : 0.35)),
+                                Color.clear
+                            ],
+                            center: .center,
+                            startRadius: 30,
+                            endRadius: diameter * 0.95
+                        )
                     )
-                )
-                .frame(width: diameter * 1.70, height: diameter * 1.70)
-                .blur(radius: isPulsing ? 46 : 34)
+                    .frame(width: diameter * 1.70, height: diameter * 1.70)
+                    .blur(radius: isPulsing ? 46 : 34)
 
-            // Núcleo brillante concentrado
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [
-                            coreColor1.opacity(isTargeted ? 0.90 : (isPulsing ? 0.82 : 0.50)),
-                            coreColor2.opacity(isTargeted ? 0.65 : (isPulsing ? 0.50 : 0.25)),
-                            Color.clear
-                        ],
-                        center: .center,
-                        startRadius: 10,
-                        endRadius: diameter * 0.55
+                // Núcleo brillante concentrado
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [
+                                coreColor1.opacity(isTargeted ? 0.90 : (isPulsing ? 0.82 : 0.50)),
+                                coreColor2.opacity(isTargeted ? 0.65 : (isPulsing ? 0.50 : 0.25)),
+                                Color.clear
+                            ],
+                            center: .center,
+                            startRadius: 10,
+                            endRadius: diameter * 0.55
+                        )
                     )
-                )
-                .frame(width: diameter * 1.15, height: diameter * 1.15)
-                .blur(radius: isPulsing ? 24 : 18)
-        }
-        .scaleEffect(isTargeted ? 1.10 : (isPulsing ? 1.08 : 0.96))
-        .onAppear {
-            withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
-                isPulsing = true
+                    .frame(width: diameter * 1.15, height: diameter * 1.15)
+                    .blur(radius: isPulsing ? 24 : 18)
             }
+            .scaleEffect(isTargeted ? 1.10 : (isPulsing ? 1.08 : 0.96))
+        } animation: { _ in
+            .easeInOut(duration: 2.2)
         }
         .animation(.easeInOut(duration: 0.35), value: accentColor)
         .allowsHitTesting(false)
