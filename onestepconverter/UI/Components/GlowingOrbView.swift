@@ -2,94 +2,123 @@
 //  GlowingOrbView.swift
 //  OneStepConverter
 //
-//  Orbe circular púrpura translúcido con resplandor exterior.
-//  Usado en: Dropzone (upload), Convirtiendo (video row), Completado (checkmark).
+//  Orbe circular Liquid Glass con APIs nativas de Apple (.ultraThinMaterial),
+//  ícono de Figma al 150% de tamaño y resplandor neón morado de alta intensidad.
 //
 
 import SwiftUI
 
 struct GlowingOrbView: View {
-    let systemName: String
     var diameter: CGFloat = AppTheme.Dimensions.orbDiameter
-    var iconSize: CGFloat = AppTheme.Dimensions.orbIconSize
-    var showGlow: Bool = true
+    var isHighlighted: Bool = false
 
     var body: some View {
         ZStack {
-            // Capa 1: Resplandor exterior difuso
-            if showGlow {
-                Circle()
-                    .fill(AppTheme.Colors.neonPurple.opacity(0.15))
-                    .frame(width: diameter * 1.4, height: diameter * 1.4)
-                    .blur(radius: AppTheme.Dimensions.orbGlowRadius)
-            }
-
-            // Capa 2: Relleno glass con degradado radial
+            // Capa 1: Liquid Glass nativo de Apple (Shader Metal de refracción y desenfoque)
             Circle()
-                .fill(AppTheme.Gradients.orbFill)
+                .fill(.ultraThinMaterial)
                 .frame(width: diameter, height: diameter)
 
-            // Capa 3: Borde brillante sutil
+            // Capa 2: Tinte violeta espacial translúcido (#3B3486 al 15%)
             Circle()
-                .stroke(AppTheme.Colors.orbBorder, lineWidth: AppTheme.Dimensions.orbBorderWidth)
+                .fill(AppTheme.Colors.glassOrbFill)
                 .frame(width: diameter, height: diameter)
 
-            // Capa 4: Ícono SF Symbol
-            Image(systemName: systemName)
-                .font(.system(size: iconSize, weight: .medium))
-                .foregroundStyle(AppTheme.Colors.textPrimary)
+            // Capa 3: Gradiente de luz especular y refracción a -45° (Figma Glass effect)
+            Circle()
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color.white.opacity(0.24),
+                            Color.white.opacity(0.04),
+                            Color.clear
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: diameter, height: diameter)
+
+            // Capa 4: Borde reflectivo exterior a -45°
+            Circle()
+                .stroke(
+                    AppTheme.Gradients.glassStroke,
+                    lineWidth: 1.2
+                )
+                .frame(width: diameter, height: diameter)
+
+            // Capa 5: Ícono oficial de Figma (IconoFlechaFigma) centrado matemáticamente (132 x 132 pt)
+            Image("UploadArrow")
+                .renderingMode(.template)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 132, height: 132)
+                .foregroundStyle(Color.white)
         }
-        .shadow(
-            color: AppTheme.Effects.glowShadow,
-            radius: AppTheme.Effects.glowShadowRadius
-        )
+        .frame(width: diameter, height: diameter)
+        .scaleEffect(isHighlighted ? 1.03 : 1.0)
+        .animation(.easeInOut(duration: 0.25), value: isHighlighted)
     }
 }
 
-// MARK: - Variantes Pre-configuradas
-extension GlowingOrbView {
-    /// Orbe grande para la Dropzone (Vista 1) con ícono de subida
-    static var uploadOrb: GlowingOrbView {
-        GlowingOrbView(systemName: "arrow.up.to.line")
-    }
+// MARK: - Resplandor Neón Púrpura Pulsante Continuo (Breathing Glow)
+struct OrbNeonGlowView: View {
+    var diameter: CGFloat = AppTheme.Dimensions.orbDiameter
+    var isTargeted: Bool = false
+    @State private var isPulsing: Bool = false
 
-    /// Orbe grande para la Vista Completada (Vista 3) con checkmark
-    static var completedOrb: GlowingOrbView {
-        GlowingOrbView(systemName: "checkmark")
-    }
+    var body: some View {
+        ZStack {
+            // Halo exterior difuso de gran alcance (morado intenso) que respira en bucle
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            AppTheme.Colors.neonPurple.opacity(isTargeted ? 0.98 : (isPulsing ? 0.92 : 0.65)),
+                            AppTheme.Colors.accentPurple.opacity(isTargeted ? 0.80 : (isPulsing ? 0.65 : 0.35)),
+                            Color.clear
+                        ],
+                        center: .center,
+                        startRadius: 30,
+                        endRadius: diameter * 0.95
+                    )
+                )
+                .frame(width: diameter * 1.70, height: diameter * 1.70)
+                .blur(radius: isPulsing ? 46 : 34)
 
-    /// Orbe pequeño para la fila de video en la Vista Convirtiendo
-    static var videoRowOrb: GlowingOrbView {
-        GlowingOrbView(
-            systemName: "video.fill",
-            diameter: AppTheme.Dimensions.rowIconDiameter,
-            iconSize: 18,
-            showGlow: false
-        )
+            // Núcleo brillante concentrado
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            AppTheme.Colors.neonPurpleLight.opacity(isTargeted ? 0.90 : (isPulsing ? 0.82 : 0.50)),
+                            AppTheme.Colors.neonPurple.opacity(isTargeted ? 0.65 : (isPulsing ? 0.50 : 0.25)),
+                            Color.clear
+                        ],
+                        center: .center,
+                        startRadius: 10,
+                        endRadius: diameter * 0.55
+                    )
+                )
+                .frame(width: diameter * 1.15, height: diameter * 1.15)
+                .blur(radius: isPulsing ? 24 : 18)
+        }
+        .scaleEffect(isTargeted ? 1.10 : (isPulsing ? 1.08 : 0.96))
+        .onAppear {
+            withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: true)) {
+                isPulsing = true
+            }
+        }
+        .allowsHitTesting(false)
     }
 }
 
-#Preview("Upload Orb") {
+#Preview {
     ZStack {
-        AppTheme.Gradients.mainBackground
-        GlowingOrbView.uploadOrb
+        Color(hex: "#000320")
+            .ignoresSafeArea()
+        OrbNeonGlowView(isTargeted: false)
+        GlowingOrbView(isHighlighted: false)
     }
     .frame(width: 400, height: 400)
 }
-
-#Preview("Completed Orb") {
-    ZStack {
-        AppTheme.Gradients.mainBackground
-        GlowingOrbView.completedOrb
-    }
-    .frame(width: 400, height: 400)
-}
-
-#Preview("Video Row Orb") {
-    ZStack {
-        AppTheme.Gradients.mainBackground
-        GlowingOrbView.videoRowOrb
-    }
-    .frame(width: 100, height: 100)
-}
-
