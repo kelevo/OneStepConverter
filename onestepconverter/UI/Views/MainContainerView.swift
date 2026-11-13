@@ -11,14 +11,13 @@ import SwiftUI
 /// Estados principales del ciclo de conversión.
 enum AppState {
     case dropzone
-    case confirmConverting
     case converting
     case completed
 }
 
 struct MainContainerView: View {
+    @State private var queueViewModel = QueueViewModel()
     @State private var currentState: AppState = .dropzone
-    @State private var isDragTargeted: Bool = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -37,13 +36,7 @@ struct MainContainerView: View {
             Group {
                 switch currentState {
                 case .dropzone:
-                    DropzoneView(
-                        isTargeted: $isDragTargeted,
-                        onSelectFolderTapped: handleSelectFolder
-                    )
-                case .confirmConverting:
-                    Text("Confirmar Lote — Próxima fase")
-                        .foregroundStyle(AppTheme.Colors.textSecondary)
+                    DropzoneView(viewModel: queueViewModel)
                 case .converting:
                     ConvertingView()
                 case .completed:
@@ -57,11 +50,6 @@ struct MainContainerView: View {
             width: AppTheme.Dimensions.windowWidth,
             height: AppTheme.Dimensions.windowHeight
         )
-    }
-
-    // MARK: - Actions
-    private func handleSelectFolder() {
-        print("📁 [OneStepConverter] Acción disparada: Seleccionar carpeta")
     }
 }
 
