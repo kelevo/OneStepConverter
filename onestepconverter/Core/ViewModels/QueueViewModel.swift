@@ -24,6 +24,7 @@ final class QueueViewModel {
     // MARK: - Propiedades de Estado
     var items: [VideoItem] = []
     var uiState: DropzoneUIState = .idle
+    var options: ConversionOptions = ConversionOptions()
 
     /// Límite estricto de videos por lote
     let maxBatchLimit: Int = 40
@@ -100,16 +101,32 @@ final class QueueViewModel {
         }
     }
 
-    /// Vacía la cola y regresa la aplicación al estado inicial (.idle)
+    /// Restaura las opciones de configuración del lote a sus valores por defecto
+    func resetOptions() {
+        options = ConversionOptions()
+    }
+
+    /// Vacía la cola y regresa la aplicación al estado inicial (.idle) con opciones por defecto
     func clearQueue() {
         cancelLimitExceededTimer()
         items.removeAll()
+        resetOptions()
         uiState = .idle
     }
 
-    /// Disparado al presionar "COMPRIMIR Y CONVERTIR" en la Fase 3 (reinicia a .idle)
-    func startCompression() {
+    /// Acción de cancelación del lote desde la vista de confirmación
+    func cancelBatch() {
         clearQueue()
+    }
+
+    /// Inicia el proceso de conversión y compresión (hook preparado para Fase 5)
+    func startConversion() {
+        clearQueue()
+    }
+
+    /// Alias compatible con Fase 3
+    func startCompression() {
+        startConversion()
     }
 
     // MARK: - Manejo de Estado de Límite Excedido (6 segundos)

@@ -76,13 +76,15 @@ struct GlowingOrbView: View {
     // MARK: - Contenido Central
     @ViewBuilder
     private var orbContent: some View {
+        let iconSize = diameter * (132.0 / 222.0)
+
         switch contentType {
         case .uploadArrow:
             Image("UploadArrow")
                 .renderingMode(.template)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 132, height: 132)
+                .frame(width: iconSize, height: iconSize)
                 .foregroundStyle(Color.white)
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
 
@@ -91,18 +93,18 @@ struct GlowingOrbView: View {
                 .renderingMode(.template)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 132, height: 132)
+                .frame(width: iconSize, height: iconSize)
                 .foregroundStyle(Color.white)
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
 
         case .counter(let count):
-            VStack(spacing: 4) {
+            VStack(spacing: diameter <= 180 ? 2 : 4) {
                 Text("\(count)")
-                    .font(AppTheme.Typography.counterFontFallback)
+                    .font(diameter <= 180 ? Font.custom("Inter", size: 44).weight(.bold) : AppTheme.Typography.counterFontFallback)
                     .foregroundStyle(Color.white)
 
                 Text("Videos Agregados")
-                    .font(AppTheme.Typography.counterLabelFontFallback)
+                    .font(diameter <= 180 ? Font.custom("Inter", size: 13) : AppTheme.Typography.counterLabelFontFallback)
                     .foregroundStyle(AppTheme.Colors.textSecondary)
             }
             .transition(.opacity.combined(with: .scale(scale: 0.95)))

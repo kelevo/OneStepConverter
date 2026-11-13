@@ -89,11 +89,15 @@ La interfaz sigue una estética **Dark Mode espacial / neón púrpura translu
 - **Zona Activa de Drag & Drop:** Rectángulo delimitado de `~460 x 260 pt` centrado alrededor del orbe. Arrastrar dentro activa el estado `.draggingOver` (`IconoAgregando`).
 - **Acción Secundaria:** Botón tipo cápsula (`SELECCIONAR CARPETA`) debajo del orbe, con fondo `#1F2951`, esquinas redondeadas (`14pt`) y apertura de `NSOpenPanel` con advertencia de límite de 40 videos.
 
-#### Vista 1.5: Confirmación de Lote (`ConfirmarCompresion.png`)
-- **Orbe Central:** Muestra el número de videos agregados en grande (`48pt`, Bold) y subtítulo `Videos Agregados` (`14pt`, `#94A3B8`).
+#### Vista 1.5: Confirmación y Configuración del Lote (`ConfirmarCompresion_2.png`)
+- **Orbe Central:** Escala a `180 x 180 pt` con Liquid Glass y resplandor neón pulsante, mostrando el número de videos agregados en grande (`44pt`, Bold) y subtítulo `Videos Agregados` (`13pt`, `#94A3B8`). Toda el área central mantiene activo el receptor de Drag & Drop para seguir sumando videos hasta 40.
+- **Fila Horizontal de Opciones de Configuración:**
+  1. `Comprimir`: Switch estilo píldora con acento púrpura neón (`#8B5CF6`), encendido por defecto.
+  2. `Modo privado`: Switch estilo píldora con acento púrpura neón (`#8B5CF6`), encendido por defecto. Al activarse, los nombres reales de los videos se enmascaran como "Video 1", "Video 2", etc. durante la conversión.
+  3. `Formato`: Selector en cápsula blanca (`#FFFFFF`) con texto oscuro `#000320` y menú desplegable limpio (`MP4`, `MOV`, `MP3`). MP4 por defecto.
 - **Botonera de Acción:**
-  - Botón principal: `COMPRIMIR Y CONVERTIR` (`250 x 43 pt`, fondo `#1F2951`, borde brillante).
-  - Botón de cancelación: Circular (`43 x 43 pt`), fondo `#850002`, borde sutil, ícono `IconoClose` y sombra Figma (`X: 0, Y: 10, blur: 60, spread: 0, color: #FF0004` al 25%).
+  - Botón izquierdo `CANCELAR`: Cápsula roja oscura (`#7F0909`, `150 x 43 pt`) con resplandor sutil rojizo y texto blanco Bold. Vacía la cola, restablece opciones por defecto y regresa a la vista inicial.
+  - Botón derecho: Cápsula púrpura (`#1F2951`, `240 x 43 pt`) con borde brillante. Muestra dinámicamente `COMPRIMIR Y CONVERTIR` cuando la compresión está activa, o `CONVERTIR` cuando `shouldCompress == false`.
 - **Límite Estricto de 40 Videos:**
   - Si el usuario arrastra o selecciona un lote que haga superar 40 videos en total, **se rechaza el lote entrante por completo**.
   - El título cambia a `MÁXIMO 40 VIDEOS`.

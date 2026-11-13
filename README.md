@@ -78,9 +78,10 @@ La interfaz cuenta con una estética **Dark Mode espacial** con acentos neón y 
 
 - [x] **Fase 1:** Andamiaje del proyecto macOS, arquitectura de capas y sistema de diseño base Figma.
 - [x] **Fase 2:** Perfeccionamiento visual milimétrico: orbe Liquid Glass nativo Apple, tipografía Inter, luces de fondo y resplandor neón pulsante continuo en bucle.
-- [x] **Fase 3:** Ingesta por Drag & Drop y NSOpenPanel, inspección asíncrona con `ffprobe`, validación de límite de 40 videos con alerta roja y pantalla de confirmación.
-- [ ] **Fase 4:** Motor de conversión `ffmpeg`, ejecución en tiempo real con monitoreo de progreso/ETA y cola de videos activa (`ConvertingView`).
-- [ ] **Fase 5:** Pantalla de finalización (`CompletedView`), envío seguro a Papelera de originales y notificaciones del sistema.
+- [x] **Fase 3:** Ingesta por Drag & Drop y NSOpenPanel, inspección asíncrona con `ffprobe` y validación de límite de 40 videos con alerta roja.
+- [x] **Fase 4:** Vista de confirmación y configuración del lote (`ConfirmarCompresion_2.png`): switches de compresión y modo privado, selector de formato desplegable (MP4, MOV, MP3) y botonera de acción con cápsula de cancelación roja y botón dinámico.
+- [ ] **Fase 5:** Motor de conversión `ffmpeg`, ejecución en tiempo real con monitoreo de progreso/ETA y cola de videos activa (`ConvertingView`).
+- [ ] **Fase 6:** Pantalla de finalización (`CompletedView`), envío seguro a Papelera de originales y notificaciones del sistema.
 
 ---
 
@@ -96,7 +97,7 @@ onestepconverter/
 │   ├── App/
 │   │   └── AppDelegate.swift           # Gestión de ciclo de vida y notificaciones
 │   ├── Core/
-│   │   ├── Models/                     # VideoItem, ConversionProfile
+│   │   ├── Models/                     # VideoItem, ConversionProfile, ConversionOptions
 │   │   ├── Services/                   # FFmpegLocator, VideoInspector, VideoProcessor, FileTrashManager
 │   │   └── ViewModels/                 # QueueViewModel (@Observable)
 │   └── UI/
