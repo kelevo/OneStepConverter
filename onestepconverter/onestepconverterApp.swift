@@ -3,13 +3,15 @@
 //  OneStepConverter
 //
 //  Punto de entrada de la aplicación.
-//  Ventana fija 760×560 con barra de título oculta.
+//  Ventana fija 760×560 con barra de título oculta y adaptador de AppDelegate.
 //
 
 import SwiftUI
 
 @main
 struct OneStepConverterApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     var body: some Scene {
         WindowGroup {
             MainContainerView()
