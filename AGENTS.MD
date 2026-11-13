@@ -96,7 +96,7 @@ La interfaz sigue una estética **Dark Mode espacial / neón púrpura translu
   2. `Modo privado`: Switch estilo píldora con acento púrpura neón (`#8B5CF6`), encendido por defecto. Al activarse, los nombres reales de los videos se enmascaran como "Video 1", "Video 2", etc. durante la conversión.
   3. `Formato`: Selector en cápsula blanca (`#FFFFFF`) con texto oscuro `#000320` y menú desplegable limpio (`MP4`, `MOV`, `MP3`). MP4 por defecto.
 - **Botonera de Acción:**
-  - Botón izquierdo `CANCELAR`: Cápsula roja oscura (`#7F0909`, `150 x 43 pt`) con resplandor sutil rojizo y texto blanco Bold. Vacía la cola, restablece opciones por defecto y regresa a la vista inicial.
+  - Botón izquierdo `CANCELAR`: Cápsula roja oscura (`#850002`, `150 x 43 pt`) con resplandor neón (`#FF0004` al 25%, Blur 60, Y: 10, X: 0) y texto blanco Bold. Vacía la cola, restablece opciones por defecto y regresa a la vista inicial.
   - Botón derecho: Cápsula púrpura (`#1F2951`, `240 x 43 pt`) con borde brillante. Muestra dinámicamente `COMPRIMIR Y CONVERTIR` cuando la compresión está activa, o `CONVERTIR` cuando `shouldCompress == false`.
 - **Límite Estricto de 40 Videos:**
   - Si el usuario arrastra o selecciona un lote que haga superar 40 videos en total, **se rechaza el lote entrante por completo**.

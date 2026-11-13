@@ -8,16 +8,8 @@
 
 import SwiftUI
 
-/// Estados principales del ciclo de conversión.
-enum AppState {
-    case dropzone
-    case converting
-    case completed
-}
-
 struct MainContainerView: View {
     @State private var queueViewModel = QueueViewModel()
-    @State private var currentState: AppState = .dropzone
 
     var body: some View {
         VStack(spacing: 0) {
@@ -32,15 +24,15 @@ struct MainContainerView: View {
             }
             .frame(height: 28)
 
-            // Contenido dinámico según el estado actual
+            // Contenido dinámico según el estado actual de la máquina de estados
             Group {
-                switch currentState {
+                switch queueViewModel.screenState {
                 case .dropzone:
                     DropzoneView(viewModel: queueViewModel)
                 case .converting:
-                    ConvertingView()
+                    ConvertingView(viewModel: queueViewModel)
                 case .completed:
-                    CompletedView()
+                    CompletedView(viewModel: queueViewModel)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)

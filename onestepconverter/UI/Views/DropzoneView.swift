@@ -182,7 +182,7 @@ struct DropzoneView: View {
         if viewModel.uiState == .readyToConvert {
             // Estado Confirmar Lote (ConfirmarCompresion_2.png): Dos cápsulas (CANCELAR + COMPRIMIR Y CONVERTIR)
             HStack(spacing: 16) {
-                // Botón izquierdo "CANCELAR" (Cápsula roja #7F0909)
+                // Botón izquierdo "CANCELAR" (Cápsula roja #850002 con sombra Figma: #FF0004 25%, Blur 60, Y 10, X 0)
                 Button(action: {
                     viewModel.cancelBatch()
                 }) {
@@ -205,10 +205,10 @@ struct DropzoneView: View {
                                 .stroke(Color.white.opacity(0.15), lineWidth: 1)
                         )
                         .shadow(
-                            color: isCancelButtonHovered
-                                ? AppTheme.Colors.cancelDarkRedGlow
-                                : Color.clear,
-                            radius: 12
+                            color: AppTheme.Colors.cancelDarkRedGlow,
+                            radius: isCancelButtonHovered ? 35 : 30,
+                            x: 0,
+                            y: 10
                         )
                 }
                 .buttonStyle(.plain)
