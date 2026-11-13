@@ -1,9 +1,3 @@
-# Specs & AI Agent configs
-.agent/
-.agents/
-/specs/
-specs/
-
 # macOS system files
 .DS_Store
 .AppleDouble
@@ -15,6 +9,10 @@ specs/
 # Xcode & Swift Build Artifacts
 build/
 DerivedData/
+dist/
+*.dmg
+*.xcarchive
+xcuserdata/
 *.xcuserstate
 project.xcworkspace/xcuserdata/
 *.xcuserdatad/
@@ -29,3 +27,7 @@ Packages/
 Package.pins
 Package.resolved
 
+# Specs & AI Agent configs
+.agent/
+.agents/
+specs/

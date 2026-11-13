@@ -16,7 +16,7 @@
       "kind": "group",
       "name": "Products",
       "children": [
-        { "path": "<PRODUCTS>/onestepconverter.app", "id": "CDDB7BA530A66FBB00DD6E17", "type": "wrapper.application", "index": false },
+        { "path": "<PRODUCTS>/OneStepConverter.app", "id": "CDDB7BA530A66FBB00DD6E17", "type": "wrapper.application", "index": false },
       ],
     },
   ],
@@ -24,7 +24,7 @@
     {
       "name": "onestepconverter",
       "id": "CDDB7BA430A66FBB00DD6E17",
-      "product": "Products/onestepconverter.app",
+      "product": "Products/OneStepConverter.app",
       "product-type": "application",
       "build-phases": [
         "compile-sources",
@@ -41,11 +41,14 @@
         "ENABLE_HARDENED_RUNTIME": "YES",
         "ENABLE_PREVIEWS": "YES",
         "GENERATE_INFOPLIST_FILE": "YES",
+        "INFOPLIST_KEY_CFBundleDisplayName": "OneStepConverter",
+        "INFOPLIST_KEY_CFBundleName": "OneStepConverter",
+        "INFOPLIST_KEY_NSHumanReadableCopyright": "By Patrick Jhonatan Hernandez",
         "LD_RUNPATH_SEARCH_PATHS": "@executable_path/../Frameworks",
         "MACOSX_DEPLOYMENT_TARGET": "14.0",
         "MARKETING_VERSION": "1.0",
         "PRODUCT_BUNDLE_IDENTIFIER": "com.patrickhernandez.onestepconverter",
-        "PRODUCT_NAME": "$(TARGET_NAME)",
+        "PRODUCT_NAME": "OneStepConverter",
         "SDKROOT": "macosx",
         "STRING_CATALOG_GENERATE_SYMBOLS": "YES",
         "SUPPORTED_PLATFORMS": "macosx",

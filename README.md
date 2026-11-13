@@ -5,8 +5,8 @@
 <h1 align="center">OneStepConverter</h1>
 
 <p align="center">
-  <strong>Normalización y compresión de lotes de video en un solo paso para macOS.</strong><br>
-  Aplicación nativa, rápida y de código abierto construida con SwiftUI y aceleración de hardware para Apple Silicon.
+  <strong>Conversor y compresor de lotes de video nativo para macOS en un solo paso</strong><br>
+  <em>By Patrick Jhonatan Hernandez</em>
 </p>
 
 <p align="center">
@@ -21,67 +21,84 @@
 
 ## 🎯 ¿Qué es OneStepConverter?
 
-**OneStepConverter** es una herramienta de escritorio para macOS diseñada para eliminar la fricción al procesar grandes lotes de video.
+**OneStepConverter** es una aplicación de escritorio nativa para macOS diseñada para simplificar y automatizar en un solo paso el procesamiento, normalización y compresión de lotes de video.
 
 ### El problema que resuelve
-Anteriormente, normalizar y comprimir videos requería hasta tres herramientas independientes:
-1. **Smart Converter:** Para convertir archivos en formatos incompatibles (`.avi`, `.mkv`, etc.) a formato universal `.mp4` (H.264 + AAC).
-2. **Video Compressor:** Para reducir drásticamente el peso de los archivos, generando contenedores intermedios `.mov`.
-3. **Atajos / FFmpeg CLI:** Scripts de terminal (`ffmpeg -i input.mov -c copy output.mp4`) para re-empaquetar los videos de vuelta a `.mp4` sin perder tiempo recomprimiendo.
+Anteriormente, normalizar y comprimir lotes de video requería un flujo engorroso con hasta tres herramientas distintas:
+1. **Smart Converter:** Para convertir formatos incompatibles (`.avi`, `.mkv`, `.ts`, etc.) a formato universal `.mp4` (H.264 + AAC).
+2. **Video Compressor:** Para reducir drásticamente el peso de los archivos, lo cual generaba contenedores intermedios `.mov`.
+3. **Atajos / FFmpeg CLI:** Un script de terminal (`ffmpeg -i input.mov -c copy output.mp4`) para re-empaquetar los `.mov` de vuelta a `.mp4` universal sin recomprimir.
 
 ### La solución en un solo paso
-**OneStepConverter** unifica todo este pipeline en una sola pasada directa:
-- **Inspección automática (`ffprobe`):** Detección de códecs de video/audio, dimensiones, bitrate y duración exacta.
-- **Control de Lote y Límite de 40 Videos:** Ingesta inteligente por arrastre o selector nativo de carpetas, con escaneo recursivo y validación de lote máximo de 40 videos con feedback visual de alerta.
-- **Normalización + Compresión unificada:** Convierte cualquier formato a `.mp4` universal ("tipo Android": H.264 + AAC + `faststart`) con compresión balanceada por CPU (`libx264`) o acelerada por GPU (`VideoToolbox`).
-- **Validación de integridad:** Comprobación estricta del resultado antes de interactuar con el archivo original.
-- **Limpieza segura:** Envío automático del original a la Papelera de macOS mediante `FileManager.trashItem`.
+**OneStepConverter** reemplaza todo ese flujo en una sola pasada directa:
+- **Inspección automática (`ffprobe`):** Analiza códecs, resoluciones, bitrate y duración exacta en microsegundos.
+- **Ingesta por Lote (hasta 40 videos):** Soporta arrastrar y soltar (Drag & Drop) o selección nativa de carpetas con escaneo recursivo inteligente.
+- **Regla de Umbral de Compresión (< 300MB):** Los videos con peso menor a 300 MB **no se comprimen** innecesariamente. Si ya son compatibles, se remuxean al instante (`-c copy`); si provienen de formatos obsoletos (`.avi`, `.mkv`, etc.), se transcodifican en alta fidelidad (`-crf 18`) sin degradación ni aumento de peso. Los videos mayores o iguales a 300 MB se comprimen de forma balanceada (`-crf 26`).
+- **Modo Privado:** Enmascara dinámicamente los nombres reales de los videos en la interfaz (mostrando "Video 1", "Video 2", etc.) para proteger la privacidad durante grabaciones o uso en público.
+- **Formatos Universales:** Soporte de salida en **MP4** ("tipo Android", universalmente compatible en cualquier reproductor), **MOV** o extracción de pista de audio en **MP3**.
+- **Monitoreo de Progreso y ETA en tiempo real:** Lectura precisa del pipe de FFmpeg para calcular porcentaje exacto y tiempo restante estimado en lenguaje natural.
+- **Seguridad Absoluta de Archivos:** Valida la integridad del archivo resultante (`terminationStatus == 0`, tamaño > 0, duración concordante) antes de mover el archivo original a la **Papelera de macOS** mediante `FileManager.trashItem`.
+- **Métricas de Reducción y Notificaciones:** Resumen detallado del espacio recuperado en disco y alertas nativas del sistema con `UserNotifications`.
 
 ---
 
-## 📐 Metodología: Spec-Driven Development (SDD)
+## ✨ Características Principales
 
-Este proyecto se desarrolla siguiendo de forma estricta la metodología **Spec-Driven Development (SDD)**:
-
-> **El código nunca improvisa; el código implementa especificaciones.**
-
-1. **Especificación previa:** Cada funcionalidad, pantalla o ajuste técnico se diseña primero en un documento de especificación formal (`specs/NN-nombre.md`) que delimita el alcance (*In / Out of scope*), modelo de datos, plan de ejecución paso a paso y criterios de aceptación booleanos.
-2. **Validación y Aprobación:** Solo cuando la especificación ha sido revisada y marcada como aprobada, se inicia la implementación técnica.
-3. **Control de Versiones Atómico:** Cada especificación se asocia a una rama de trabajo dedicada (`feat/...` o `fix/...`) garantizando trazabilidad y calidad de software continua.
+- **Diseño Espacial Dark Mode:** Interfaz construida en SwiftUI nativo con materiales Liquid Glass (`.ultraThinMaterial`), reflejos a -45° y resplandor neón púrpura pulsante continuo.
+- **Motor Asíncrono Swift 6:** Arquitectura basada en actores de concurrencia (`actor VideoProcessor`, `@Observable QueueViewModel`) sin bloqueos en el hilo principal.
+- **Límite Inteligente de Ingesta:** Protección de hasta 40 videos por lote con alerta visual en rojo neón y temporizador automático de recuperación.
+- **Cancelación Granular:** Permite omitir o eliminar videos individuales de la cola sin interrumpir el procesamiento del resto del lote.
 
 ---
 
-## 🛠️ Stack Tecnológico
+## 💻 Requisitos del Sistema
 
-- **Plataforma:** macOS 14.0+ (Sonoma / Sequoia / versiones posteriores) optimizado para procesadores Apple Silicon (M-series).
-- **Lenguaje & UI:** Swift 6 + SwiftUI nativo (sin dependencias web ni capas intermedias).
-- **Concurrencia:** Swift Concurrency moderno (`async/await`, `Actors`, macro `@Observable`).
-- **Motor Multimedia:** Integración con `ffmpeg` y `ffprobe` con aceleración de hardware vía Apple `VideoToolbox`.
-- **Integraciones Nativas:**
-  - `UniformTypeIdentifiers` para Drag & Drop fluido.
-  - `AppKit` (`NSOpenPanel`) para selección de directorios y archivos.
-  - `UserNotifications` para alertas nativas del sistema.
+- **Sistema Operativo:** macOS 14.0 Sonoma, macOS 15 Sequoia o superior.
+- **Arquitectura:** Apple Silicon (M1/M2/M3/M4) e Intel (x86_64).
+- **Motor Multimedia:** `ffmpeg` y `ffprobe` instalados en el sistema (rutas estándar `/opt/homebrew/bin` o `/usr/local/bin`).
 
----
-
-## 🎨 Sistema de Diseño
-
-La interfaz cuenta con una estética **Dark Mode espacial** con acentos neón y materiales translúcidos:
-- **Fondo:** Degradado radial y vertical continuo de Azul Medianoche a Negro Espacial (`#101639` $\rightarrow$ `#080D2D` $\rightarrow$ `#000320`).
-- **Superficies Glass:** Acabado translúcido `#1F2951` con borde difuso del 15%.
-- **Acento Neón:** Resplandores púrpuras vibrantes (`#7C3AED` a `#8B5CF6`).
-- **Ventana Unificada:** Dimensiones fijas de `760 x 560 pt` con barra de título integrada y controles de ventana nativos.
+### Instalación de dependencias (Homebrew)
+Si aún no cuentas con FFmpeg en tu Mac, instálalo fácilmente con:
+```bash
+brew install ffmpeg
+```
 
 ---
 
-## 🚦 Estado de las Fases (Roadmap)
+## 📦 Instalación
 
-- [x] **Fase 1:** Andamiaje del proyecto macOS, arquitectura de capas y sistema de diseño base Figma.
-- [x] **Fase 2:** Perfeccionamiento visual milimétrico: orbe Liquid Glass nativo Apple, tipografía Inter, luces de fondo y resplandor neón pulsante continuo en bucle.
-- [x] **Fase 3:** Ingesta por Drag & Drop y NSOpenPanel, inspección asíncrona con `ffprobe` y validación de límite de 40 videos con alerta roja.
-- [x] **Fase 4:** Vista de confirmación y configuración del lote (`ConfirmarCompresion_2.png`): switches de compresión y modo privado, selector de formato desplegable (MP4, MOV, MP3) y botonera de acción con cápsula de cancelación roja y botón dinámico.
-- [x] **Fase 5:** Motor de conversión `ffmpeg`, ejecución en tiempo real con monitoreo de progreso/ETA, cola de videos activa (`ConvertingView`), validación de integridad previa, envío seguro a Papelera de macOS y pantalla de finalización (`CompletedView`).
-- [x] **Fase 6:** Métricas reales de reducción en finalización (`ConversionCompletada_3.png`) y notificaciones nativas del sistema (`UserNotifications`).
+### Opción 1: Archivo `.dmg` (Recomendado)
+1. Descarga la versión más reciente de `OneStepConverter.dmg` desde la sección de **Releases** en GitHub.
+2. Abre el archivo `.dmg` y arrastra **OneStepConverter.app** a tu carpeta **/Applications**.
+3. Abre OneStepConverter desde Spotlight o tu carpeta de Aplicaciones.
+   > **Nota sobre macOS Gatekeeper:** Al ser una distribución independiente de código abierto con firma ad-hoc, si macOS muestra la advertencia *"OneStepConverter no se puede abrir porque el desarrollador no ha sido verificado"*, haz clic derecho sobre la aplicación en `/Applications` y selecciona **Abrir**, luego confirma la apertura. Solo es necesario la primera vez.
+
+---
+
+## 🛠️ Compilación y Empaquetado desde Código Fuente
+
+### Prerrequisitos para desarrolladores
+- macOS 14.0+ con Xcode 15 o superior instalado.
+- Herramientas de línea de comandos de Xcode (`xcode-select --install`).
+
+### Compilar en modo Debug
+```bash
+# Clonar el repositorio
+git clone https://github.com/tu-usuario/onestepconverter.git
+cd onestepconverter
+
+# Compilar con xcodebuild
+xcodebuild -project onestepconverter.xcodeproj \
+  -scheme onestepconverter \
+  -configuration Debug build
+```
+
+### Generar el Instalador DMG (Release)
+El proyecto incluye un script automatizado para compilar en Release, aplicar firma de código ad-hoc y empaquetar el instalador `.dmg`:
+```bash
+./scripts/build_dmg.sh
+```
+El instalador resultante estará disponible en `dist/OneStepConverter.dmg`.
 
 ---
 
@@ -91,53 +108,62 @@ La interfaz cuenta con una estética **Dark Mode espacial** con acentos neón y 
 onestepconverter/
 ├── assets/
 │   └── logo.png                        # Logotipo oficial para documentación
+├── scripts/
+│   └── build_dmg.sh                    # Script de compilación y empaquetado DMG
+├── specs/                              # Especificaciones de desarrollo (SDD)
 ├── onestepconverter/
 │   ├── onestepconverterApp.swift       # Punto de entrada y configuración de ventana (760x560)
-│   ├── Assets.xcassets/                # Catálogo de iconos nativos macOS y colores
 │   ├── App/
-│   │   └── AppDelegate.swift           # Gestión de ciclo de vida y notificaciones
+│   │   └── AppDelegate.swift           # Ciclo de vida y notificaciones (UNUserNotificationCenter)
 │   ├── Core/
-│   │   ├── Models/                     # VideoItem, ConversionProfile, ConversionOptions
-│   │   ├── Services/                   # FFmpegLocator, VideoInspector, VideoProcessor, FileTrashManager
-│   │   └── ViewModels/                 # QueueViewModel (@Observable)
-│   └── UI/
-│       ├── Theme/                      # AppTheme (paleta, degradados, tipografía, dimensiones)
-│       ├── Components/                 # GlowingOrbView, NeonProgressBar, VideoRowView
-│       └── Views/                      # MainContainerView, DropzoneView, ConvertingView, CompletedView
-└── onestepconverter.xcodeproj/        # Configuración del proyecto Xcode (Declarativo)
+│   │   ├── Models/
+│   │   │   ├── VideoItem.swift         # Modelo de datos, estados, progreso, ETA y regla 300MB
+│   │   │   ├── ConversionProfile.swift # Perfiles de codificación (Equilibrado, Rápido, Audio)
+│   │   │   └── ConversionOptions.swift # Configuración de lote (comprimir, modo privado, formato)
+│   │   ├── Services/
+│   │   │   ├── FFmpegLocator.swift     # Detección dinámica de ffmpeg/ffprobe en macOS
+│   │   │   ├── VideoInspector.swift    # Inspección de metadatos JSON con ffprobe
+│   │   │   ├── VideoProcessor.swift    # Motor de ejecución de FFmpeg y lectura de pipe:1
+│   │   │   ├── FileTrashManager.swift  # Validación de salida y envío a Papelera de macOS
+│   │   │   └── NotificationManager.swift # Despacho de notificaciones locales de macOS
+│   │   └── ViewModels/
+│   │       └── QueueViewModel.swift    # Orquestador observable del estado y la cola
+│   ├── UI/
+│   │   ├── Theme/
+│   │   │   └── AppTheme.swift          # Gradientes, paleta de colores espaciales y estilos
+│   │   ├── Components/
+│   │   │   ├── GlowingOrbView.swift    # Orbe Liquid Glass reutilizable con resplandor neón
+│   │   │   ├── NeonProgressBar.swift   # Barra de progreso púrpura neón
+│   │   │   └── VideoRowView.swift      # Fila de video con progreso y botón individual
+│   │   └── Views/
+│   │       ├── MainContainerView.swift # Enrutador de estados de navegación
+│   │       ├── DropzoneView.swift      # Vista 1 e intermedia (Inicio y Confirmar Lote)
+│   │       ├── ConvertingView.swift    # Vista 2 (Cola de conversión y progreso global)
+│   │       └── CompletedView.swift     # Vista 3 (Resumen de métricas de reducción)
+│   ├── Resources/
+│   │   ├── Fonts/                      # Tipografías Inter integradas
+│   │   └── Logo.png                    # Icono en alta resolución
+│   └── Assets.xcassets/                # Catálogo de imágenes vectoriales y AppIcon
+└── onestepconverter.xcodeproj/        # Configuración del proyecto Xcode
 ```
 
 ---
 
-## 🚀 Compilación y Desarrollo
+## 📐 Metodología: Spec-Driven Development (SDD)
 
-### Prerrequisitos
-- Mac con procesador Apple Silicon o Intel.
-- macOS 14.0 o superior.
-- Xcode 15+ o Xcode 16/27+.
-- `ffmpeg` y `ffprobe` instalados (recomendado vía Homebrew: `brew install ffmpeg`).
+Este proyecto fue desarrollado íntegramente bajo la metodología **Spec-Driven Development (SDD)**:
+- Cada módulo, vista y ajuste técnico cuenta con una especificación previa en la carpeta `specs/`.
+- El código se implementa en ramas dedicadas (`feat/...`) verificando criterios de aceptación estrictos antes de su integración.
 
-### Pasos para compilar
-1. Clona el repositorio:
-   ```bash
-   git clone https://github.com/tu-usuario/onestepconverter.git
-   cd onestepconverter
-   ```
-2. Abre el proyecto en Xcode:
-   ```bash
-   open onestepconverter.xcodeproj
-   ```
-3. O compila directamente desde la terminal:
-   ```bash
-   xcodebuild -project onestepconverter.xcodeproj \
-     -scheme onestepconverter \
-     -destination 'platform=macOS,arch=arm64' \
-     -configuration Debug build
-   ```
+---
+
+## 👤 Autor y Créditos
+
+Desarrollado con dedicación por:
+- **Patrick Jhonatan Hernandez** — *Arquitectura, Diseño y Desarrollo*
 
 ---
 
 ## 📄 Licencia
 
-Este proyecto es de **código abierto** bajo la licencia [MIT](LICENSE) (o de libre uso personal y comunitario). Las contribuciones son bienvenidas siguiendo la metodología de especificaciones.
-
+Este proyecto es de código abierto bajo la licencia [MIT](LICENSE).

@@ -131,39 +131,49 @@ La interfaz sigue una estética **Dark Mode espacial / neón púrpura translu
 
 ---
 
-## 5. Arquitectura de Carpetas Sugerida (Xcode / SwiftUI)
+## 5. Arquitectura de Carpetas del Proyecto (Xcode / SwiftUI)
 
 ```text
-OneStepConverter/
+onestepconverter/
 ├── AGENTS.md
-├── App/
-│   ├── OneStepConverterApp.swift       # Punto de entrada, configuración de ventana (760x560)
-│   └── AppDelegate.swift               # Permisos de UNUserNotificationCenter
-├── Core/
-│   ├── Models/
-│   │   ├── VideoItem.swift             # Modelo del archivo (URL, formato, tamaño, estado, progreso, ETA)
-│   │   └── ConversionProfile.swift     # Perfiles (Equilibrado CRF 26, Máxima Compresión, Solo MP4)
-│   ├── Services/
-│   │   ├── FFmpegLocator.swift         # Busca ffmpeg/ffprobe en Bundle, /opt/homebrew/bin y /usr/local/bin
-│   │   ├── VideoInspector.swift        # Wrapper async de ffprobe (duración, códecs, bitrate)
-│   │   ├── VideoProcessor.swift        # Ejecución de Process, parsing de stdout/stderr para % y ETA
-│   │   └── FileTrashManager.swift      # Validación post-proceso y envío seguro a Papelera
-│   └── ViewModels/
-│       └── QueueViewModel.swift        # Actor/Observable que gestiona la cola secuencial o concurrente
-├── UI/
-│   ├── Theme/
-│   │   └── AppTheme.swift              # Gradientes, colores hex, modificadores de brillo (Glow)
-│   ├── Components/
-│   │   ├── GlowingOrbView.swift        # Orbe púrpura reutilizable (Upload, Video Icon, Checkmark)
-│   │   ├── NeonProgressBar.swift       # Barra de progreso redondeada púrpura
-│   │   └── VideoRowView.swift          # Fila de video en la vista Convirtiendo
-│   └── Views/
-│       ├── MainContainerView.swift     # Orquestador de estados (Inicio -> Convirtiendo -> Completado)
-│       ├── DropzoneView.swift          # Vista 1 (Inicio.png)
-│       ├── ConvertingView.swift        # Vista 2 (Convirtiendo.png)
-│       └── CompletedView.swift         # Vista 3 (ConversionCompletada.png)
-└── Resources/
-    └── Assets.xcassets                 # AppIcon (Logo.png)
+├── README.md
+├── scripts/
+│   └── build_dmg.sh                    # Script de compilación y empaquetado OneStepConverter.dmg
+├── specs/                              # Especificaciones de desarrollo (SDD)
+├── onestepconverter/
+│   ├── onestepconverterApp.swift       # Punto de entrada, configuración de ventana (760x560)
+│   ├── App/
+│   │   └── AppDelegate.swift           # Permisos y delegado de UNUserNotificationCenter
+│   ├── Core/
+│   │   ├── Models/
+│   │   │   ├── VideoItem.swift         # Modelo del archivo (URL, formato, tamaño, estado, progreso, ETA, regla 300MB)
+│   │   │   ├── ConversionProfile.swift # Perfiles (Equilibrado CRF 26, Alta fidelidad CRF 18, Audio MP3)
+│   │   │   └── ConversionOptions.swift # Opciones de configuración (comprimir, modo privado, formato)
+│   │   ├── Services/
+│   │   │   ├── FFmpegLocator.swift     # Busca ffmpeg/ffprobe en Bundle, /opt/homebrew/bin y /usr/local/bin
+│   │   │   ├── VideoInspector.swift    # Wrapper async de ffprobe (duración, códecs, bitrate)
+│   │   │   ├── VideoProcessor.swift    # Ejecución de Process, parsing de pipe:1 para % y ETA
+│   │   │   ├── FileTrashManager.swift  # Validación post-proceso y envío seguro a Papelera
+│   │   │   └── NotificationManager.swift # Despacho de notificaciones locales con UNUserNotificationCenter
+│   │   └── ViewModels/
+│   │       └── QueueViewModel.swift    # Actor/Observable que gestiona la cola secuencial y métricas reales
+│   ├── UI/
+│   │   ├── Theme/
+│   │   │   └── AppTheme.swift          # Gradientes, colores hex, modificadores de brillo (Glow)
+│   │   ├── Components/
+│   │   │   ├── GlowingOrbView.swift    # Orbe púrpura Liquid Glass reutilizable (Upload, Video Icon, Checkmark)
+│   │   │   ├── NeonProgressBar.swift   # Barra de progreso redondeada púrpura
+│   │   │   └── VideoRowView.swift      # Fila de video en la vista Convirtiendo
+│   │   └── Views/
+│   │       ├── MainContainerView.swift # Orquestador de estados (Inicio -> Confirmar -> Convirtiendo -> Completado)
+│   │       ├── DropzoneView.swift      # Vista 1 (Inicio y confirmación del lote)
+│   │       ├── ConvertingView.swift    # Vista 2 (Convirtiendo y progreso global)
+│   │       └── CompletedView.swift     # Vista 3 (Proceso completado con métricas de reducción)
+│   ├── Resources/
+│   │   ├── Fonts/                      # Tipografías Inter integradas
+│   │   └── Logo.png                    # Icono en alta resolución
+│   └── Assets.xcassets/                # Iconos vectoriales y AppIcon nativo
+└── onestepconverter.xcodeproj/        # Configuración del proyecto Xcode
 ```
 
 ---
