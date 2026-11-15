@@ -324,10 +324,12 @@ final class QueueViewModel {
                 )
 
                 // 2. Validar integridad técnica y enviar original a la Papelera de macOS
+                let effectiveCompress = item.shouldApplyCompression(userOption: options.shouldCompress)
                 let finalURL = try await FileTrashManager.finalizeConversion(
                     for: item,
                     tempURL: tempURL,
-                    isAudioOnly: options.outputFormat == .mp3
+                    isAudioOnly: options.outputFormat == .mp3,
+                    isCompression: effectiveCompress
                 )
 
                 // 3. Obtener peso final real del archivo generado

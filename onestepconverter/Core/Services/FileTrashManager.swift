@@ -39,7 +39,8 @@ nonisolated enum FileTrashManager {
     static func finalizeConversion(
         for item: VideoItem,
         tempURL: URL,
-        isAudioOnly: Bool = false
+        isAudioOnly: Bool = false,
+        isCompression: Bool = false
     ) async throws -> URL {
         let fileManager = FileManager.default
 
@@ -55,7 +56,18 @@ nonisolated enum FileTrashManager {
             throw FileTrashError.emptyOutputFile
         }
 
-        // 3. Inspeccionar integridad técnica mediante ffprobe
+        // 3. Salvaguarda de tamaño: en modo conversión pura (sin compresión), el archivo resultante jamás debe inflarse
+        if !isCompression && !isAudioOnly {
+            let maxAllowedBytes = Int64(Double(item.fileSizeBytes) * 1.05) + 2_000_000
+            if size > maxAllowedBytes {
+                try? fileManager.removeItem(at: tempURL)
+                throw FileTrashError.validationFailed(
+                    "El archivo convertido (\(ByteCountFormatter.string(fromByteCount: size, countStyle: .file))) superó el tamaño original (\(item.formattedFileSize)). Operación cancelada por seguridad."
+                )
+            }
+        }
+
+        // 4. Inspeccionar integridad técnica mediante ffprobe
         do {
             let metadata = try await VideoInspector.inspect(fileURL: tempURL)
 
