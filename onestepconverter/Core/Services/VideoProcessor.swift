@@ -136,7 +136,12 @@ actor VideoProcessor {
 
                 var projectedBytes = initialEstimate
                 if let size = currentTotalSize, size > 1024, progress > 0.05 {
-                    projectedBytes = Int64(Double(size) / progress)
+                    if effectiveCompress {
+                        projectedBytes = Int64(Double(size) / progress)
+                    } else {
+                        // En modo conversión pura (remux o sin compresión), no inflar la estimación por encima del original
+                        projectedBytes = min(item.fileSizeBytes, Int64(Double(size) / progress))
+                    }
                 }
 
                 onProgress(progress, eta, projectedBytes)
@@ -211,13 +216,14 @@ actor VideoProcessor {
             "-i", item.sourceURL.path
         ]
 
-        // Regla de negocio: videos < 300MB no se comprimen, pero sí se convierten si se requiere
+        // Regla de negocio: la regla de los 300MB aplica exclusivamente a la compresión.
+        // Si el usuario eligió CONVERTIR (shouldCompress == false), se convierten todos los videos sin filtro de 300MB.
         let shouldCompress = item.shouldApplyCompression(userOption: options.shouldCompress)
 
         switch options.outputFormat {
         case .mp4:
             if shouldCompress {
-                // Modo equilibrado / alta compresión compatible universal
+                // Modo equilibrado / alta compresión compatible universal (para videos >= 300MB)
                 args.append(contentsOf: [
                     "-c:v", "libx264",
                     "-preset", "medium",
@@ -228,30 +234,57 @@ actor VideoProcessor {
                     "-movflags", "+faststart"
                 ])
             } else {
-                // Sin compresión: remux instantáneo si ya es compatible, o transcodificación ligera de alta fidelidad
-                let isH264 = item.videoCodec.lowercased().contains("h264") || item.videoCodec.lowercased().contains("avc")
-                let isAAC = item.audioCodec.lowercased().contains("aac")
+                // Modo Conversión Pura: CERO AUMENTO DE TAMAÑO
+                let canCopyVideo = isMp4CompatibleVideoCodec(item.videoCodec)
+                let hasAudio = !item.audioCodec.isEmpty && item.audioCodec.lowercased() != "none"
+                let canCopyAudio = !hasAudio || isMp4CompatibleAudioCodec(item.audioCodec)
+                let needsHevcTag = isHevcVideoCodec(item.videoCodec)
 
-                if isH264 && isAAC {
+                if canCopyVideo && canCopyAudio {
+                    // Remux instantáneo fiel al script de referencia: ffmpeg -i input.mov -c copy output.mp4
+                    args.append(contentsOf: ["-c", "copy"])
+                    if needsHevcTag {
+                        args.append(contentsOf: ["-tag:v", "hvc1"])
+                    }
+                    args.append(contentsOf: ["-movflags", "+faststart"])
+                } else if canCopyVideo && !canCopyAudio {
+                    // Video compatible intacto (0% cambio de peso de video), normalizando solo audio incompatible (ej. PCM) a AAC
+                    args.append(contentsOf: ["-c:v", "copy"])
+                    if needsHevcTag {
+                        args.append(contentsOf: ["-tag:v", "hvc1"])
+                    }
                     args.append(contentsOf: [
-                        "-c", "copy",
+                        "-c:a", "aac",
+                        "-b:a", "128k",
                         "-movflags", "+faststart"
                     ])
                 } else {
-                    args.append(contentsOf: [
+                    // Formato fuente obsoleto no compatible con MP4: transcodificación segura sin inflar peso
+                    var transcodeArgs = [
                         "-c:v", "libx264",
                         "-preset", "fast",
-                        "-crf", "18",
+                        "-crf", "26",
                         "-pix_fmt", "yuv420p",
                         "-c:a", "aac",
-                        "-b:a", "192k",
+                        "-b:a", "128k",
                         "-movflags", "+faststart"
-                    ])
+                    ]
+                    // Techo de bitrate basado en el archivo original para garantizar que nunca aumente
+                    if item.durationSeconds > 0 {
+                        let originalBitrateKbps = Int((Double(item.fileSizeBytes) * 8.0) / (item.durationSeconds * 1000.0))
+                        if originalBitrateKbps > 100 {
+                            transcodeArgs.append(contentsOf: [
+                                "-maxrate", "\(originalBitrateKbps)k",
+                                "-bufsize", "\(originalBitrateKbps * 2)k"
+                            ])
+                        }
+                    }
+                    args.append(contentsOf: transcodeArgs)
                 }
             }
 
         case .mov:
-            if options.shouldCompress {
+            if shouldCompress {
                 args.append(contentsOf: [
                     "-c:v", "libx264",
                     "-preset", "medium",
@@ -261,18 +294,38 @@ actor VideoProcessor {
                     "-b:a", "128k"
                 ])
             } else {
-                let isMovCompatible = item.originalExtension.lowercased() == "mov"
-                if isMovCompatible {
+                // Modo Conversión a MOV sin compresión: remux instantáneo para fuentes compatibles
+                let canCopyVideo = isMovCompatibleVideoCodec(item.videoCodec)
+                let hasAudio = !item.audioCodec.isEmpty && item.audioCodec.lowercased() != "none"
+                let canCopyAudio = !hasAudio || isMovCompatibleAudioCodec(item.audioCodec)
+
+                if canCopyVideo && canCopyAudio {
                     args.append(contentsOf: ["-c", "copy"])
-                } else {
+                } else if canCopyVideo && !canCopyAudio {
                     args.append(contentsOf: [
+                        "-c:v", "copy",
+                        "-c:a", "aac",
+                        "-b:a", "128k"
+                    ])
+                } else {
+                    var transcodeArgs = [
                         "-c:v", "libx264",
                         "-preset", "fast",
-                        "-crf", "18",
+                        "-crf", "26",
                         "-pix_fmt", "yuv420p",
                         "-c:a", "aac",
-                        "-b:a", "192k"
-                    ])
+                        "-b:a", "128k"
+                    ]
+                    if item.durationSeconds > 0 {
+                        let originalBitrateKbps = Int((Double(item.fileSizeBytes) * 8.0) / (item.durationSeconds * 1000.0))
+                        if originalBitrateKbps > 100 {
+                            transcodeArgs.append(contentsOf: [
+                                "-maxrate", "\(originalBitrateKbps)k",
+                                "-bufsize", "\(originalBitrateKbps * 2)k"
+                            ])
+                        }
+                    }
+                    args.append(contentsOf: transcodeArgs)
                 }
             }
 
@@ -293,5 +346,47 @@ actor VideoProcessor {
         ])
 
         return args
+    }
+
+    // MARK: - Helpers de Compatibilidad de Códecs
+
+    /// Códecs de video compatibles para copia directa en contenedor MP4
+    private func isMp4CompatibleVideoCodec(_ codec: String) -> Bool {
+        let c = codec.lowercased()
+        return c.contains("h264") || c.contains("avc") ||
+               c.contains("hevc") || c.contains("h265") ||
+               c.contains("mpeg4") || c.contains("mp4v")
+    }
+
+    /// Determina si el códec de video es HEVC / H.265 (requiere -tag:v hvc1 en MP4 para Apple/QuickTime)
+    private func isHevcVideoCodec(_ codec: String) -> Bool {
+        let c = codec.lowercased()
+        return c.contains("hevc") || c.contains("h265") || c.contains("hvc1") || c.contains("hev1")
+    }
+
+    /// Códecs de audio compatibles para copia directa en contenedor MP4
+    private func isMp4CompatibleAudioCodec(_ codec: String) -> Bool {
+        let c = codec.lowercased()
+        return c.contains("aac") || c.contains("mp4a") ||
+               c.contains("mp3") ||
+               c.contains("ac3") || c.contains("eac3") ||
+               c.contains("alac") || c.contains("flac")
+    }
+
+    /// Códecs de video compatibles para copia directa en contenedor MOV (QuickTime)
+    private func isMovCompatibleVideoCodec(_ codec: String) -> Bool {
+        let c = codec.lowercased()
+        return c.contains("h264") || c.contains("avc") ||
+               c.contains("hevc") || c.contains("h265") ||
+               c.contains("prores") || c.contains("apple prores") ||
+               c.contains("mpeg4") || c.contains("jpeg") || c.contains("mjpeg")
+    }
+
+    /// Códecs de audio compatibles para copia directa en contenedor MOV (QuickTime)
+    private func isMovCompatibleAudioCodec(_ codec: String) -> Bool {
+        let c = codec.lowercased()
+        return c.contains("aac") || c.contains("mp3") ||
+               c.contains("pcm") || c.contains("alac") ||
+               c.contains("ac3") || c.contains("eac3")
     }
 }

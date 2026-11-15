@@ -33,7 +33,7 @@ Anteriormente, normalizar y comprimir lotes de video requería un flujo engorros
 **OneStepConverter** reemplaza todo ese flujo en una sola pasada directa:
 - **Inspección automática (`ffprobe`):** Analiza códecs, resoluciones, bitrate y duración exacta en microsegundos.
 - **Ingesta por Lote (hasta 40 videos):** Soporta arrastrar y soltar (Drag & Drop) o selección nativa de carpetas con escaneo recursivo inteligente.
-- **Regla de Umbral de Compresión (< 300MB):** Los videos con peso menor a 300 MB **no se comprimen** innecesariamente. Si ya son compatibles, se remuxean al instante (`-c copy`); si provienen de formatos obsoletos (`.avi`, `.mkv`, etc.), se transcodifican en alta fidelidad (`-crf 18`) sin degradación ni aumento de peso. Los videos mayores o iguales a 300 MB se comprimen de forma balanceada (`-crf 26`).
+- **Regla de Umbral de Compresión (< 300MB) y Conversión sin Aumento de Peso:** La regla de los 300 MB aplica exclusivamente a la compresión: los videos menores a 300 MB no se comprimen innecesariamente para no degradarlos. Cuando el usuario selecciona **CONVERTIR** (o el archivo es < 300 MB), se realiza un remuxeo directo ultra rápido (`-c copy` / `-tag:v hvc1` para HEVC) garantizando que el peso del archivo **nunca aumente**. Si el usuario activa la compresión en archivos $\ge$ 300 MB, se aplica compresión balanceada universal (`-crf 26`).
 - **Modo Privado:** Enmascara dinámicamente los nombres reales de los videos en la interfaz (mostrando "Video 1", "Video 2", etc.) para proteger la privacidad durante grabaciones o uso en público.
 - **Formatos Universales:** Soporte de salida en **MP4** ("tipo Android", universalmente compatible en cualquier reproductor), **MOV** o extracción de pista de audio en **MP3**.
 - **Monitoreo de Progreso y ETA en tiempo real:** Lectura precisa del pipe de FFmpeg para calcular porcentaje exacto y tiempo restante estimado en lenguaje natural.
@@ -44,6 +44,7 @@ Anteriormente, normalizar y comprimir lotes de video requería un flujo engorros
 
 ## ✨ Características Principales
 
+- **Garantía Universal de Cero Inflación de Peso:** Al convertir sin comprimir (o para videos < 300 MB), OneStepConverter realiza remuxeo directo de streams (`-c copy` / `-tag:v hvc1`) en segundos, garantizando que el tamaño resultante sea exactamente igual o menor al original sin inflar el peso.
 - **Diseño Espacial Dark Mode:** Interfaz construida en SwiftUI nativo con materiales Liquid Glass (`.ultraThinMaterial`), reflejos a -45° y resplandor neón púrpura pulsante continuo.
 - **Motor Asíncrono Swift 6:** Arquitectura basada en actores de concurrencia (`actor VideoProcessor`, `@Observable QueueViewModel`) sin bloqueos en el hilo principal.
 - **Límite Inteligente de Ingesta:** Protección de hasta 40 videos por lote con alerta visual en rojo neón y temporizador automático de recuperación.
