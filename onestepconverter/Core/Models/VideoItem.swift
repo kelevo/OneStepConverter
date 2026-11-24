@@ -115,7 +115,7 @@ nonisolated struct VideoItem: Identifiable, Sendable {
         }
     }
 
-    /// Formato legible en español natural del ETA restante (ej. "Restan 2 minutos", "Restan 35 segundos")
+    /// Formato legible en español natural del ETA restante (ej. "Restan 1 hora y 10 minutos", "Restan 2 minutos", "Restan 35 segundos")
     var formattedETA: String {
         guard let seconds = etaSeconds, seconds > 0 else {
             return progress > 0 ? "Calculando..." : "En espera"
@@ -123,14 +123,21 @@ nonisolated struct VideoItem: Identifiable, Sendable {
 
         let totalSecs = Int(seconds)
         if totalSecs >= 3600 {
-            let hours = totalSecs / 3600
-            let minutes = (totalSecs % 3600) / 60
-            return "Restan \(hours) h \(minutes) min"
+            let totalMins = (totalSecs + 30) / 60
+            let hours = totalMins / 60
+            let minutes = totalMins % 60
+            let hourLabel = hours == 1 ? "1 hora" : "\(hours) horas"
+            if minutes == 0 {
+                return hours == 1 ? "Resta 1 hora" : "Restan \(hours) horas"
+            } else {
+                let minLabel = minutes == 1 ? "1 minuto" : "\(minutes) minutos"
+                return "Restan \(hourLabel) y \(minLabel)"
+            }
         } else if totalSecs >= 60 {
             let minutes = (totalSecs + 30) / 60
             return minutes == 1 ? "Resta 1 minuto" : "Restan \(minutes) minutos"
         } else {
-            return "Restan \(max(1, totalSecs)) segundos"
+            return totalSecs == 1 ? "Resta 1 segundo" : "Restan \(max(1, totalSecs)) segundos"
         }
     }
 

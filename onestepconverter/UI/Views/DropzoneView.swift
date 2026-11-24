@@ -44,6 +44,16 @@ struct DropzoneView: View {
 
                     Spacer()
                         .frame(height: 24)
+                } else if let metrics = viewModel.lastBatchMetrics, viewModel.uiState == .idle {
+                    // Pantalla Final Unificada (media_1795536487854_67de9ce7.png)
+                    Spacer()
+                        .frame(height: 18)
+
+                    lastBatchMetricsBlock(metrics)
+                        .zIndex(2)
+
+                    Spacer()
+                        .frame(height: 18)
                 } else {
                     Spacer()
                         .frame(height: AppTheme.Dimensions.orbToButtonSpacing)
@@ -174,6 +184,34 @@ struct DropzoneView: View {
             .labelsHidden()
             .fixedSize()
         }
+    }
+
+    // MARK: - Bloque de Métricas del Último Lote (media_1795536487854_67de9ce7.png)
+    private func lastBatchMetricsBlock(_ metrics: LastBatchMetrics) -> some View {
+        VStack(spacing: 6) {
+            // Línea 1 destacada: "10GB en reducción" o "Conversión finalizada"
+            if metrics.hasStorageSavings {
+                HStack(spacing: 5) {
+                    Text(metrics.formattedTotalSaved)
+                        .font(Font.custom("Inter-Regular_Bold", size: 18))
+                        .foregroundStyle(Color.white)
+
+                    Text("en reducción")
+                        .font(Font.custom("Inter-Regular", size: 18))
+                        .foregroundStyle(Color.white)
+                }
+            } else {
+                Text("Conversión finalizada")
+                    .font(Font.custom("Inter-Regular_Bold", size: 18))
+                    .foregroundStyle(Color.white)
+            }
+
+            // Línea 2 descriptiva: "Peso de los X videos antes: 20GB - después: 10GB"
+            Text("Peso de los \(metrics.completedVideosCount) videos antes: \(metrics.formattedTotalOriginal) - después: \(metrics.formattedTotalFinal)")
+                .font(Font.custom("Inter-Regular", size: 13))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+        }
+        .transition(.opacity.combined(with: .scale(scale: 0.96)))
     }
 
     // MARK: - Botonera Inferior

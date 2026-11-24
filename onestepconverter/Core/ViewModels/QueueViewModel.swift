@@ -24,6 +24,18 @@ enum DropzoneUIState: Equatable {
     case readyToConvert
 }
 
+/// Métricas de almacenamiento del último lote procesado para mostrar en la Dropzone unificada
+nonisolated struct LastBatchMetrics: Sendable {
+    let completedVideosCount: Int
+    let totalOriginalBytes: Int64
+    let totalFinalBytes: Int64
+    let totalSavedBytes: Int64
+    let formattedTotalSaved: String
+    let formattedTotalOriginal: String
+    let formattedTotalFinal: String
+    let hasStorageSavings: Bool
+}
+
 /// Gestiona la cola de videos a procesar, su inspección, conversión con FFmpeg y estados de navegación.
 @Observable
 @MainActor
@@ -33,6 +45,9 @@ final class QueueViewModel {
     var items: [VideoItem] = []
     var uiState: DropzoneUIState = .idle
     var options: ConversionOptions = ConversionOptions()
+
+    /// Métricas del último lote procesado (para exhibir en DropzoneView)
+    var lastBatchMetrics: LastBatchMetrics? = nil
 
     /// Límite estricto de videos por lote
     let maxBatchLimit: Int = 40
@@ -80,7 +95,7 @@ final class QueueViewModel {
         return min(1.0, max(0.0, total / Double(items.count)))
     }
 
-    /// Tiempo total restante estimado en minutos para el footer
+    /// Tiempo total restante estimado formateado en horas y minutos naturales
     var formattedTotalRemainingTime: String {
         guard screenState == .converting else { return "0 minutos restantes" }
 
@@ -95,8 +110,20 @@ final class QueueViewModel {
         if totalSeconds <= 60 {
             return "Menos de 1 minuto restante"
         } else {
-            let minutes = Int(ceil(totalSeconds / 60.0))
-            return "\(minutes) minutos restantes"
+            let totalMinutes = Int(ceil(totalSeconds / 60.0))
+            if totalMinutes >= 60 {
+                let hours = totalMinutes / 60
+                let minutes = totalMinutes % 60
+                let hourLabel = hours == 1 ? "1 hora" : "\(hours) horas"
+                if minutes == 0 {
+                    return "\(hourLabel) restante\(hours == 1 ? "" : "s")"
+                } else {
+                    let minLabel = minutes == 1 ? "1 minuto" : "\(minutes) minutos"
+                    return "\(hourLabel) y \(minLabel) restantes"
+                }
+            } else {
+                return totalMinutes == 1 ? "1 minuto restante" : "\(totalMinutes) minutos restantes"
+            }
         }
     }
 
@@ -168,6 +195,9 @@ final class QueueViewModel {
     /// Ingesta una lista de URLs (archivos o carpetas) provenientes de Drag & Drop o NSOpenPanel.
     func ingestURLs(_ urls: [URL]) async {
         guard !urls.isEmpty else { return }
+
+        // Si había un resumen de lote previo, limpiarlo de inmediato
+        lastBatchMetrics = nil
 
         // Recolectar archivos candidatos recursivamente
         let candidateURLs = collectVideoFiles(from: urls)
@@ -359,19 +389,42 @@ final class QueueViewModel {
 
         currentProcessingId = nil
 
-        // Devolver el foco a la app tras finalizar la cola
-        bringAppToFront()
+        // Guardar métricas del lote finalizado para la pantalla Dropzone unificada
+        let saved = self.totalSavedBytes
+        let count = self.completedVideosCount
+        let original = self.totalOriginalBytes
+        let final = self.totalFinalBytes
+        let hasSavings = self.hasStorageSavings
+        let formattedSaved = self.formattedTotalSaved
+        let formattedOriginal = self.formattedTotalOriginal
+        let formattedFinal = self.formattedTotalFinal
 
-        // Disparar notificación nativa de conclusión de lote
+        if count > 0 {
+            self.lastBatchMetrics = LastBatchMetrics(
+                completedVideosCount: count,
+                totalOriginalBytes: original,
+                totalFinalBytes: final,
+                totalSavedBytes: saved,
+                formattedTotalSaved: formattedSaved,
+                formattedTotalOriginal: formattedOriginal,
+                formattedTotalFinal: formattedFinal,
+                hasStorageSavings: hasSavings
+            )
+        }
+
+        // Disparar notificación nativa de conclusión de lote (silenciosa en segundo plano, sin robar foco)
         NotificationManager.shared.sendBatchCompletedNotification(
-            completedCount: self.completedVideosCount,
-            savedBytes: self.totalSavedBytes,
-            savedFormatted: self.formattedTotalSaved
+            completedCount: count,
+            savedBytes: saved,
+            savedFormatted: formattedSaved
         )
 
-        // Transición automática a la pantalla de finalización (CompletedView / ConversionCompletada.png)
+        // Limpiar la cola de videos y transicionar a la Dropzone unificada con métricas
+        self.items.removeAll()
+        self.uiState = .idle
+
         withAnimation(.easeInOut(duration: 0.45)) {
-            self.screenState = .completed
+            self.screenState = .dropzone
         }
     }
 
