@@ -32,6 +32,7 @@ nonisolated struct VideoItem: Identifiable, Sendable {
     var targetExtension: String
     var estimatedOutputBytes: Int64?
     var actualOutputBytes: Int64?
+    var failureLog: String?
 
     init(
         id: UUID = UUID(),
@@ -47,7 +48,8 @@ nonisolated struct VideoItem: Identifiable, Sendable {
         etaSeconds: Double? = nil,
         targetExtension: String = "mp4",
         estimatedOutputBytes: Int64? = nil,
-        actualOutputBytes: Int64? = nil
+        actualOutputBytes: Int64? = nil,
+        failureLog: String? = nil
     ) {
         self.id = id
         self.sourceURL = sourceURL
@@ -63,6 +65,7 @@ nonisolated struct VideoItem: Identifiable, Sendable {
         self.targetExtension = targetExtension
         self.estimatedOutputBytes = estimatedOutputBytes
         self.actualOutputBytes = actualOutputBytes
+        self.failureLog = failureLog
     }
 
     /// URL temporal de procesamiento en la misma carpeta origen

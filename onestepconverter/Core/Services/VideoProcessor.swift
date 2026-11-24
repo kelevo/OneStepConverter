@@ -173,7 +173,7 @@ actor VideoProcessor {
 
                 guard process.terminationStatus == 0 else {
                     try? FileManager.default.removeItem(at: tempURL)
-                    throw VideoProcessingError.processFailed(process.terminationStatus, logCapture.log.suffix(200).description)
+                    throw VideoProcessingError.processFailed(process.terminationStatus, logCapture.log.suffix(2000).description)
                 }
 
                 guard FileManager.default.fileExists(atPath: tempURL.path) else {
@@ -222,6 +222,16 @@ actor VideoProcessor {
 
         switch options.outputFormat {
         case .mp4:
+            // Mapeo seguro de streams: primer video, primer audio (si existe), descartando subtítulos (teletexto DVB, etc.) y datos
+            // Normalización de timestamps con -avoid_negative_ts make_zero para evitar pantallas negras o desincronización
+            args.append(contentsOf: [
+                "-map", "0:v:0",
+                "-map", "0:a:0?",
+                "-sn",
+                "-dn",
+                "-avoid_negative_ts", "make_zero"
+            ])
+
             if shouldCompress {
                 // Modo equilibrado / alta compresión compatible universal (para videos >= 300MB)
                 args.append(contentsOf: [
@@ -248,7 +258,7 @@ actor VideoProcessor {
                     }
                     args.append(contentsOf: ["-movflags", "+faststart"])
                 } else if canCopyVideo && !canCopyAudio {
-                    // Video compatible intacto (0% cambio de peso de video), normalizando solo audio incompatible (ej. PCM) a AAC
+                    // Video compatible intacto (0% cambio de peso de video), normalizando solo audio incompatible (ej. MP2, AC3, PCM) a AAC
                     args.append(contentsOf: ["-c:v", "copy"])
                     if needsHevcTag {
                         args.append(contentsOf: ["-tag:v", "hvc1"])
@@ -259,7 +269,7 @@ actor VideoProcessor {
                         "-movflags", "+faststart"
                     ])
                 } else {
-                    // Formato fuente obsoleto no compatible con MP4: transcodificación segura sin inflar peso
+                    // Formato fuente obsoleto no compatible con MP4 (ej. MPEG-2 de archivos .ts): transcodificación segura sin inflar peso
                     var transcodeArgs = [
                         "-c:v", "libx264",
                         "-preset", "fast",
@@ -273,9 +283,11 @@ actor VideoProcessor {
                     if item.durationSeconds > 0 {
                         let originalBitrateKbps = Int((Double(item.fileSizeBytes) * 8.0) / (item.durationSeconds * 1000.0))
                         if originalBitrateKbps > 100 {
+                            let targetBitrateKbps = max(100, Int(Double(originalBitrateKbps) * 0.88))
                             transcodeArgs.append(contentsOf: [
-                                "-maxrate", "\(originalBitrateKbps)k",
-                                "-bufsize", "\(originalBitrateKbps * 2)k"
+                                "-b:v", "\(targetBitrateKbps)k",
+                                "-maxrate", "\(targetBitrateKbps)k",
+                                "-bufsize", "\(targetBitrateKbps * 2)k"
                             ])
                         }
                     }
@@ -284,6 +296,15 @@ actor VideoProcessor {
             }
 
         case .mov:
+            // Mapeo seguro de streams y normalización de timestamps para QuickTime MOV
+            args.append(contentsOf: [
+                "-map", "0:v:0",
+                "-map", "0:a:0?",
+                "-sn",
+                "-dn",
+                "-avoid_negative_ts", "make_zero"
+            ])
+
             if shouldCompress {
                 args.append(contentsOf: [
                     "-c:v", "libx264",
@@ -330,9 +351,12 @@ actor VideoProcessor {
             }
 
         case .mp3:
-            // Extracción pura de audio MP3
+            // Extracción pura de audio MP3 descartando video, subtítulos y datos
             args.append(contentsOf: [
+                "-map", "0:a:0?",
                 "-vn",
+                "-sn",
+                "-dn",
                 "-c:a", "libmp3lame",
                 "-q:a", "2"
             ])
@@ -364,13 +388,10 @@ actor VideoProcessor {
         return c.contains("hevc") || c.contains("h265") || c.contains("hvc1") || c.contains("hev1")
     }
 
-    /// Códecs de audio compatibles para copia directa en contenedor MP4
+    /// Códecs de audio compatibles para copia directa en contenedor MP4 (reproducción universal garantizada)
     private func isMp4CompatibleAudioCodec(_ codec: String) -> Bool {
         let c = codec.lowercased()
-        return c.contains("aac") || c.contains("mp4a") ||
-               c.contains("mp3") ||
-               c.contains("ac3") || c.contains("eac3") ||
-               c.contains("alac") || c.contains("flac")
+        return c.contains("aac") || c.contains("mp4a") || c.contains("mp3")
     }
 
     /// Códecs de video compatibles para copia directa en contenedor MOV (QuickTime)

@@ -85,7 +85,7 @@ struct DropzoneView: View {
         case .limitExceeded:
             return "MÁXIMO 40 VIDEOS"
         case .importing:
-            return "AGREGANDO VIDEOS, ESPERA UN MOMENTO"
+            return "AGREGANDO VIDEOS"
         case .idle, .draggingOver, .readyToConvert:
             return "ARRASTRA TUS VÍDEOS AQUÍ"
         }

@@ -381,7 +381,9 @@ final class QueueViewModel {
                     if let procErr = error as? VideoProcessingError, case .cancelled = procErr {
                         items[idx].status = .cancelled
                     } else {
-                        items[idx].status = .failed(error.localizedDescription)
+                        let fullError = error.localizedDescription
+                        items[idx].failureLog = fullError
+                        items[idx].status = .failed(fullError)
                     }
                 }
             }

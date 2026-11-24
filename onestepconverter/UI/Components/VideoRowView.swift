@@ -18,6 +18,9 @@ struct VideoRowView: View {
     var onRemove: () -> Void
 
     @State private var isActionHovered: Bool = false
+    @State private var isLogHovered: Bool = false
+    @State private var showingLogPopover: Bool = false
+    @State private var isCopied: Bool = false
 
     private var isQueued: Bool {
         item.status == .queued || item.status == .ready
@@ -27,8 +30,29 @@ struct VideoRowView: View {
         item.status == .converting
     }
 
-    private var isFinished: Bool {
-        item.status == .completed || item.status == .cancelled
+    private var isRemovableFromQueue: Bool {
+        switch item.status {
+        case .completed, .cancelled, .failed:
+            return true
+        default:
+            return false
+        }
+    }
+
+    private var hasFailureLog: Bool {
+        if item.failureLog != nil { return true }
+        if case .failed = item.status { return true }
+        return false
+    }
+
+    private var failureMessage: String {
+        if let log = item.failureLog, !log.isEmpty {
+            return log
+        }
+        if case .failed(let reason) = item.status {
+            return reason
+        }
+        return "No hay información adicional de error disponible."
     }
 
     var body: some View {
@@ -51,7 +75,12 @@ struct VideoRowView: View {
 
                 Spacer()
 
-                // 3. Botón cancelar / eliminar (28 x 28 pt con IconoCloseFigma)
+                // 3. Botón de diagnóstico de error (solo visible si falló o hay log de error)
+                if hasFailureLog {
+                    logButton
+                }
+
+                // 4. Botón cancelar en proceso / eliminar de la cola al finalizar
                 actionButton
             }
 
@@ -226,10 +255,137 @@ struct VideoRowView: View {
         }
     }
 
-    // MARK: - Botón Acción (Cancelar en proceso / Eliminar de lista al finalizar)
+    // MARK: - Botón Diagnóstico / Logs de Error
+    private var logButton: some View {
+        Button(action: {
+            showingLogPopover.toggle()
+        }) {
+            ZStack {
+                Circle()
+                    .fill(
+                        isLogHovered
+                            ? AppTheme.Colors.buttonBackground.opacity(0.95)
+                            : AppTheme.Colors.glassSurfaceTranslucent
+                    )
+                    .frame(
+                        width: AppTheme.Dimensions.cancelButtonDiameter,
+                        height: AppTheme.Dimensions.cancelButtonDiameter
+                    )
+
+                Circle()
+                    .stroke(
+                        isLogHovered ? AppTheme.Colors.neonPurpleLight : AppTheme.Colors.glowBorder,
+                        lineWidth: 1
+                    )
+                    .frame(
+                        width: AppTheme.Dimensions.cancelButtonDiameter,
+                        height: AppTheme.Dimensions.cancelButtonDiameter
+                    )
+
+                Image(systemName: "doc.text.magnifyingglass")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(Color.white)
+            }
+        }
+        .buttonStyle(.plain)
+        .contentShape(Circle())
+        .scaleEffect(isLogHovered ? 1.08 : 1.0)
+        .help("Ver registro de error")
+        .onHover { hovering in
+            withAnimation(.easeInOut(duration: 0.2)) {
+                isLogHovered = hovering
+            }
+        }
+        .popover(isPresented: $showingLogPopover, arrowEdge: .trailing) {
+            logPopoverContent
+        }
+    }
+
+    private var logPopoverContent: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            // Cabecera del popover
+            HStack {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .foregroundStyle(AppTheme.Colors.errorRed)
+                    .font(.system(size: 14))
+
+                Text("Detalle del Error")
+                    .font(Font.custom("Inter-Regular_Bold", size: 14))
+                    .foregroundStyle(Color.white)
+
+                Spacer()
+
+                Button("Cerrar") {
+                    showingLogPopover = false
+                }
+                .font(Font.custom("Inter-Regular", size: 12))
+                .buttonStyle(.plain)
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+            }
+
+            Text(item.fileName)
+                .font(Font.custom("Inter-Regular_SemiBold", size: 12))
+                .foregroundStyle(AppTheme.Colors.textSecondary)
+                .lineLimit(1)
+
+            // Contenedor de texto del log de error
+            ScrollView(.vertical) {
+                Text(failureMessage)
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundStyle(Color.white.opacity(0.95))
+                    .textSelection(.enabled)
+                    .padding(10)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .background(Color.black.opacity(0.55))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.white.opacity(0.12), lineWidth: 1)
+            )
+            .frame(maxHeight: 180)
+
+            // Botón Copiar al portapapeles
+            HStack {
+                Spacer()
+                Button(action: {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(failureMessage, forType: .string)
+                    withAnimation {
+                        isCopied = true
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        isCopied = false
+                    }
+                }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: isCopied ? "checkmark" : "doc.on.doc")
+                            .font(.system(size: 11))
+                        Text(isCopied ? "¡Copiado!" : "Copiar Detalles")
+                            .font(Font.custom("Inter-Regular_SemiBold", size: 12))
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(isCopied ? Color.green.opacity(0.3) : AppTheme.Colors.buttonBackground)
+                    .foregroundStyle(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6)
+                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(14)
+        .frame(width: 380)
+        .background(AppTheme.Gradients.mainBackground)
+    }
+
+    // MARK: - Botón Acción (Cancelar en proceso / Eliminar de cola al finalizar)
     private var actionButton: some View {
         Button(action: {
-            if isFinished {
+            if isRemovableFromQueue {
                 onRemove()
             } else {
                 onCancel()
@@ -239,7 +395,7 @@ struct VideoRowView: View {
                 Circle()
                     .fill(
                         isActionHovered
-                            ? (isFinished ? AppTheme.Colors.buttonBackground.opacity(0.95) : AppTheme.Colors.cancelRed.opacity(0.85))
+                            ? (isRemovableFromQueue ? AppTheme.Colors.buttonBackground.opacity(0.95) : AppTheme.Colors.cancelRed.opacity(0.85))
                             : AppTheme.Colors.glassSurfaceTranslucent
                     )
                     .frame(
@@ -268,6 +424,7 @@ struct VideoRowView: View {
         .buttonStyle(.plain)
         .contentShape(Circle())
         .scaleEffect(isActionHovered ? 1.08 : 1.0)
+        .help(isRemovableFromQueue ? "Eliminar de la lista" : "Cancelar conversión")
         .onHover { hovering in
             withAnimation(.easeInOut(duration: 0.2)) {
                 isActionHovered = hovering
