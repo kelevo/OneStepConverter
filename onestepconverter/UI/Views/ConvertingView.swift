@@ -70,6 +70,13 @@ struct ConvertingView: View {
                     .padding(.bottom, 36)
             }
         }
+        .onChange(of: viewModel.items.isEmpty) { _, isEmpty in
+            if isEmpty && viewModel.screenState == .converting {
+                withAnimation(.easeInOut(duration: 0.35)) {
+                    viewModel.screenState = .dropzone
+                }
+            }
+        }
     }
 
     // MARK: - Footer de Progreso Global (Convirtiendo_2.png)

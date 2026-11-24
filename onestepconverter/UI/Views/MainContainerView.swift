@@ -29,10 +29,14 @@ struct MainContainerView: View {
                 switch queueViewModel.screenState {
                 case .dropzone, .completed:
                     DropzoneView(viewModel: queueViewModel)
+                        .transition(.opacity)
                 case .converting:
                     ConvertingView(viewModel: queueViewModel)
+                        .transition(.opacity)
                 }
             }
+            .id(queueViewModel.screenState)
+            .animation(.easeInOut(duration: 0.35), value: queueViewModel.screenState)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(AppTheme.Colors.spaceBlack)

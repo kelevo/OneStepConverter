@@ -421,13 +421,12 @@ final class QueueViewModel {
             savedFormatted: formattedSaved
         )
 
-        // Limpiar la cola de videos y transicionar a la Dropzone unificada con métricas
-        self.items.removeAll()
+        // Transicionar a la Dropzone unificada con métricas y limpiar la cola
         self.uiState = .idle
-
-        withAnimation(.easeInOut(duration: 0.45)) {
+        withAnimation(.easeInOut(duration: 0.35)) {
             self.screenState = .dropzone
         }
+        self.items.removeAll()
     }
 
     /// Cancela un ítem individual de la cola
