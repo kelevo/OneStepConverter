@@ -52,6 +52,13 @@ Anteriormente, normalizar y comprimir lotes de video requería un flujo engorros
 
 ---
 
+## 🎨 Diseño de Interfaz en Figma
+
+El diseño visual, componentes Liquid Glass, paleta de colores Dark Mode espacial y las pantallas del proyecto están disponibles en Figma:
+- 🔗 **Vistas del Proyecto en Figma:** [Ver en Figma](https://www.figma.com/riffs/df7aa8a7-1b29-4f86-9ea7-78a8774aa906)
+
+---
+
 ## 💻 Requisitos del Sistema
 
 - **Sistema Operativo:** macOS 14.0 Sonoma, macOS 15 Sequoia o superior.

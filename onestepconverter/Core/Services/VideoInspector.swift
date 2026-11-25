@@ -25,11 +25,13 @@ nonisolated struct FFprobeStream: Decodable, Sendable {
     let codec_type: String?
     let codec_name: String?
     let duration: String?
+    let bit_rate: String?
 }
 
 nonisolated struct FFprobeFormat: Decodable, Sendable {
     let duration: String?
     let size: String?
+    let bit_rate: String?
 }
 
 nonisolated struct FFprobeOutput: Decodable, Sendable {
@@ -50,6 +52,8 @@ nonisolated enum VideoInspector {
             process.executableURL = URL(fileURLWithPath: ffprobePath)
             process.arguments = [
                 "-v", "quiet",
+                "-analyzeduration", "50M",
+                "-probesize", "50M",
                 "-print_format", "json",
                 "-show_format",
                 "-show_streams",
@@ -83,25 +87,36 @@ nonisolated enum VideoInspector {
             // Obtener códec de audio si existe
             let audioCodec = streams.first(where: { $0.codec_type == "audio" })?.codec_name ?? "none"
 
-            // Obtener duración en segundos (priorizar format.duration, luego stream.duration)
-            var duration: Double = 0.0
-            if let durationStr = output.format?.duration, let d = Double(durationStr) {
-                duration = d
-            } else if let durationStr = videoStream.duration, let d = Double(durationStr) {
-                duration = d
-            }
-
-            guard duration > 0 else {
-                throw VideoInspectionError.notAVideo
-            }
-
-            // Obtener tamaño del archivo
+            // Obtener tamaño del archivo primero
             var fileSize: Int64 = 0
             if let sizeStr = output.format?.size, let s = Int64(sizeStr) {
                 fileSize = s
             } else if let attrs = try? FileManager.default.attributesOfItem(atPath: fileURL.path),
                       let s = attrs[.size] as? Int64 {
                 fileSize = s
+            }
+
+            // Obtener duración en segundos (priorizar format.duration, luego stream.duration, luego cálculo por bitrate)
+            var duration: Double = 0.0
+            if let durationStr = output.format?.duration, let d = Double(durationStr), d > 0 {
+                duration = d
+            } else if let durationStr = videoStream.duration, let d = Double(durationStr), d > 0 {
+                duration = d
+            } else if let audioStream = streams.first(where: { $0.codec_type == "audio" }),
+                      let durationStr = audioStream.duration, let d = Double(durationStr), d > 0 {
+                duration = d
+            } else if let bitRateStr = output.format?.bit_rate, let br = Double(bitRateStr), br > 0, fileSize > 0 {
+                duration = (Double(fileSize) * 8.0) / br
+            }
+
+            // Fallback de seguridad para formatos broadcast/streaming (como .ts) que no incluyen cabeceras fijas de duración
+            if duration <= 0 {
+                if fileSize > 0 {
+                    // Estimación conservadora basada en bitrate estándar (2 Mbps) para permitir que el proceso avance
+                    duration = max(1.0, (Double(fileSize) * 8.0) / 2_000_000.0)
+                } else {
+                    throw VideoInspectionError.notAVideo
+                }
             }
 
             return VideoMetadata(

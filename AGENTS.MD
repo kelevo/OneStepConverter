@@ -74,6 +74,8 @@ Antes de tocar el archivo original:
 
 ## 4. Sistema de Diseño y Especificaciones UI (Basado en Figma)
 
+Las vistas y especificaciones visuales de la interfaz en Figma están disponibles en: [Figma Design File](https://www.figma.com/riffs/df7aa8a7-1b29-4f86-9ea7-78a8774aa906).
+
 La interfaz sigue una estética **Dark Mode espacial / neón púrpura translúcido** con ventana única de dimensiones fijas recomendadas: `760 x 560 pt` (con barra de título integrada `hiddenTitleBar` / `unifiedCompact` mostrando `OneStepConverter`).
 
 ### Paleta de Colores & Materiales

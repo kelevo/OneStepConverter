@@ -27,14 +27,16 @@ struct MainContainerView: View {
             // Contenido dinámico según el estado actual de la máquina de estados
             Group {
                 switch queueViewModel.screenState {
-                case .dropzone:
+                case .dropzone, .completed:
                     DropzoneView(viewModel: queueViewModel)
+                        .transition(.opacity)
                 case .converting:
                     ConvertingView(viewModel: queueViewModel)
-                case .completed:
-                    CompletedView(viewModel: queueViewModel)
+                        .transition(.opacity)
                 }
             }
+            .id(queueViewModel.screenState)
+            .animation(.easeInOut(duration: 0.35), value: queueViewModel.screenState)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .background(AppTheme.Colors.spaceBlack)

@@ -58,11 +58,17 @@ nonisolated enum FileTrashManager {
 
         // 3. Salvaguarda de tamaño: en modo conversión pura (sin compresión), el archivo resultante jamás debe inflarse
         if !isCompression && !isAudioOnly {
-            let maxAllowedBytes = Int64(Double(item.fileSizeBytes) * 1.05) + 2_000_000
+            let isMpegTs = ["ts", "m2ts", "mts"].contains(item.originalExtension.lowercased())
+            let marginMultiplier = isMpegTs ? 1.12 : 1.05
+            let marginBytes: Int64 = isMpegTs ? 5_000_000 : 2_000_000
+            let maxAllowedBytes = Int64(Double(item.fileSizeBytes) * marginMultiplier) + marginBytes
             if size > maxAllowedBytes {
+                let actualStr = ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
+                let originalStr = item.formattedFileSize
+                let maxStr = ByteCountFormatter.string(fromByteCount: maxAllowedBytes, countStyle: .file)
                 try? fileManager.removeItem(at: tempURL)
                 throw FileTrashError.validationFailed(
-                    "El archivo convertido (\(ByteCountFormatter.string(fromByteCount: size, countStyle: .file))) superó el tamaño original (\(item.formattedFileSize)). Operación cancelada por seguridad."
+                    "El archivo convertido (\(actualStr)) superó el límite permitido de \(maxStr) (Original: \(originalStr)). Operación cancelada por seguridad."
                 )
             }
         }
@@ -71,9 +77,12 @@ nonisolated enum FileTrashManager {
         do {
             let metadata = try await VideoInspector.inspect(fileURL: tempURL)
 
-            // Tolerancia de duración de ±1.5 segundos
+            // Tolerancia de duración: para archivos MPEG-TS o derivados (.ts, .m2ts, .mts) permitimos hasta 3.5s
+            // debido a ajustes de timestamp base (start_time make_zero) y alineación de paquetes
+            let isMpegTs = ["ts", "m2ts", "mts"].contains(item.originalExtension.lowercased())
+            let allowedTolerance: Double = isMpegTs ? 3.5 : 1.5
             let durationDiff = abs(metadata.durationSeconds - item.durationSeconds)
-            if item.durationSeconds > 2.0 && durationDiff > 1.5 {
+            if item.durationSeconds > 2.0 && durationDiff > allowedTolerance {
                 try? fileManager.removeItem(at: tempURL)
                 throw FileTrashError.durationMismatch(expected: item.durationSeconds, actual: metadata.durationSeconds)
             }
